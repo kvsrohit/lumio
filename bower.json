@@ -1,0 +1,27 @@
+{
+  "name": "lumio",
+  "homepage": "https://github.com/kvsrohit/lumio",
+  "authors": [
+    "Rohit Khode <kvsrohit@yahoo.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "oe-ui": "^1.2.0",
+    "platinum-sw": "^2.1.0",
+    "note-app-elements": "polymerlabs/note-app-elements#^2.1.2",
+    "polymerfire": "firebase/polymerfire#^2.2.1"
+  },
+  "resolutions": {
+    "webcomponentsjs": "^v1.1.0"
+  }
+}
