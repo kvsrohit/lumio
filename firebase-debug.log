@@ -1,0 +1,41 @@
+[debug] [2018-05-18T12:26:12.565Z] ----------------------------------------------------------------------
+[debug] [2018-05-18T12:26:12.570Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\rohit\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] [2018-05-18T12:26:12.570Z] CLI Version:   3.18.4
+[debug] [2018-05-18T12:26:12.570Z] Platform:      win32
+[debug] [2018-05-18T12:26:12.570Z] Node Version:  v8.11.2
+[debug] [2018-05-18T12:26:12.571Z] Time:          Fri May 18 2018 17:56:12 GMT+0530 (India Standard Time)
+[debug] [2018-05-18T12:26:12.571Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-05-18T12:26:12.608Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-05-18T12:26:12.612Z] > authorizing via signed-in user
+[debug] [2018-05-18T12:26:12.616Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-05-18T12:26:12.616Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1/K9x7PY9jBPZeVD6FIC64o-nA-_3xK2vSr7lOHMU3Ycg',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Fri May 18 2018 17:56:12 GMT+0530 (India Standard Time)
+[debug] [2018-05-18T12:26:13.276Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-18T12:26:13.291Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/lumio-db  
+  
+ Fri May 18 2018 17:56:13 GMT+0530 (India Standard Time)
+[debug] [2018-05-18T12:26:14.922Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-18T12:26:14.922Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/lumio-db/tokens  
+  
+ Fri May 18 2018 17:56:14 GMT+0530 (India Standard Time)
+[debug] [2018-05-18T12:26:16.039Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-18T12:26:16.040Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/lumio-db  
+  
+ Fri May 18 2018 17:56:16 GMT+0530 (India Standard Time)
+[debug] [2018-05-18T12:26:18.239Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from 'D:\work\lumio'...
+[info] 
+[debug] [2018-05-18T12:26:18.243Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/874529875833/clients/_:getWebAppConfig  
+  
+ Fri May 18 2018 17:56:18 GMT+0530 (India Standard Time)
+[debug] [2018-05-18T12:26:19.420Z] <<< HTTP RESPONSE 200
+[info] i  hosting: Serving hosting files from: public
+[info] +  hosting: Local server: http://localhost:5000
+
