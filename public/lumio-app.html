@@ -81,7 +81,7 @@
             behaviors: [Polymer.NoteAppBehavior, Polymer.NavigationBehavior],
             observers:['_onlineChanged(online)', '_routeChanged(route)'],
             signIn: function () {
-                this.$.auth.signInWithPopup();
+                this.$.auth.signInWithRedirect();//signInWithPopup();
             },
             get notesPath() {
                 return '/notes/' + this.user.uid;
