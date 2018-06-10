@@ -53,7 +53,7 @@
         <div class="layout vertical center">
             <label>Welcome!</label>
             <label>You have not created any loans yet.</label>
-            <paper-button style="margin-top: 20px;" raised primary on-tap="newLoan">Create New</paper-button>    
+            <paper-button disabled=[[!online]] style="margin-top: 20px;" raised primary on-tap="newLoan">Create New</paper-button>    
           </div>
         <div class="layout flex"></div>
       </template>
@@ -62,7 +62,7 @@
   <script>
     Polymer({
       is: 'loan-list',
-      behaviors:[Polymer.NavigationBehavior],
+      behaviors:[Polymer.NavigationBehavior, Polymer.AppNetworkStatusBehavior],
       properties: {
         loans: {
           type: Array

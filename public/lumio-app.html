@@ -35,6 +35,7 @@
             }
         </style>
 
+        <oe-message-handler fit-bottom></oe-message-handler>
         <app-location route="{{route}}"></app-location>
         <app-route id="router" route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subRoute}}">
         </app-route>
@@ -78,6 +79,7 @@
         Polymer({
             is: 'lumio-app',
             behaviors: [Polymer.NoteAppBehavior, Polymer.NavigationBehavior],
+            observers:['_onlineChanged(online)'],
             signIn: function () {
                 this.$.auth.signInWithPopup();
             },
@@ -93,6 +95,17 @@
             },
             get isEditable() {
                 return this.online;
+            },
+            _onlineChanged: function(online){
+                /* We don't want to show toast for first time */
+                if(!this.user) return;
+
+                if(online) {
+                    this.fire('oe-show-message', 'You are back online');
+                } else {
+                    this.fire('oe-show-warning', 'Data connection lost');                    
+                }
+                //this.navigate('/');
             }
         });
     </script>

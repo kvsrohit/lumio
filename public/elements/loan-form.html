@@ -79,7 +79,7 @@
         </div> -->
         <iron-collapse opened=[[viewData.hasPenalty]]>
             <oe-radio-group required label="Penalty Type" listdata='["Fixed Amount", "Interest"]' field-id="penaltyType" value={{viewData.penaltyType}}></oe-radio-group>
-            <oe-decimal required min="0.01" label="Penalty Rate" field-id="penaltyRate" value={{viewData.penaltyRate}}>
+            <oe-decimal required label="Penalty Rate" field-id="penaltyRate" value={{viewData.penaltyRate}}>
               <template is="dom-if" if=[[_penaltyIsFixed(viewData.penaltyType)]]>
                   <span prefix>&#8377;&nbsp;&nbsp;</span>
               </template>
@@ -93,14 +93,14 @@
       </div>
       <div class="actions controls">
         <paper-button on-tap="cancel">Cancel</paper-button>
-        <paper-button on-tap="save">Save</paper-button>
+        <paper-button disabled=[[!online]] on-tap="save">Save</paper-button>
       </div>
     </div>
   </template>
   <script>
     Polymer({
       is: 'loan-form',
-      behaviors: [OEUtils.FormValidationBehavior, Polymer.NavigationBehavior],
+      behaviors: [OEUtils.FormValidationBehavior, Polymer.NavigationBehavior, Polymer.AppNetworkStatusBehavior],
       properties: {
         basePath: {
           type: String
