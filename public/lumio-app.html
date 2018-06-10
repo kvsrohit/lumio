@@ -9,6 +9,7 @@
 <link rel="import" href="note-app-elements/na-elements.html">
 <link rel="import" href="elements/loan-list.html">
 <link rel="import" href="elements/loan-form.html">
+<link rel="import" href="behaviors/navigation-behavior.html">
 
 <dom-module id="lumio-app">
     <template>
@@ -35,8 +36,8 @@
         <firebase-auth id="auth" app-name="lumio" provider="google" signed-in="{{signedIn}}" user="{{user}}">
         </firebase-auth>
 
-        <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
-        </paper-fab>
+        <!-- <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
+        </paper-fab> -->
         <!-- <firebase-document id="document" app-name="lumio" path="[[editableNoteId]]" data="{{editableNote}}">
         </firebase-document> -->
         <firebase-query id="query" app-name="lumio" path="/notes/[[user.uid]]" data="{{lumios}}">
@@ -58,7 +59,7 @@
     <script>
         Polymer({
             is: 'lumio-app',
-            behaviors: [Polymer.NoteAppBehavior],
+            behaviors: [Polymer.NoteAppBehavior, Polymer.NavigationBehavior],
             signIn: function () {
                 this.$.auth.signInWithPopup();
             },
@@ -74,17 +75,7 @@
             },
             get isEditable() {
                 return this.online;
-            },
-            newLoan: function () {
-                this.navigate('/loan-form');
-            },
-            navigate: function (path, state) {
-                window.history.pushState(state, undefined, path);
-                Polymer.Base.fire('location-changed', state, {
-                    node: window
-                });
             }
-
         });
     </script>
 </dom-module>

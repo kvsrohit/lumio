@@ -1,0 +1,20 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-storage/app-network-status-behavior.html">
+
+<script>
+  (function () {
+    'use strict';
+
+    /**
+     * @polymerBehavior Polymer.NavigationBehavior
+     */
+    Polymer.NavigationBehavior = {
+      navigate: function (path, state) {
+        window.history.pushState(state, undefined, path);
+        Polymer.Base.fire('location-changed', state, {
+          node: window
+        });
+      }
+    };
+  })();
+</script>
