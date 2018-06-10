@@ -1,10 +1,33 @@
-<link rel="import" href="bower_components/note-app-elements/na-elements.html">
 <link rel="import" href="bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
 <link rel="import" href="bower_components/polymerfire/polymerfire.html">
 
+<link rel="import" href="bower_components/neon-animation/neon-animated-pages.html">
+<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="bower_components/app-route/app-location.html">
+<link rel="import" href="bower_components/app-route/app-route.html">
+
+<link rel="import" href="note-app-elements/na-elements.html">
+<link rel="import" href="elements/loan-list.html">
+<link rel="import" href="elements/loan-form.html">
+
 <dom-module id="lumio-app">
     <template>
-        <style include="note-app-shared-styles"></style>
+        <style include="note-app-shared-styles">
+            :host {
+                display: flex;
+                @apply --layout-vertical;
+            }
+
+            .app-area {
+                background-color: azure;
+                padding: 10px;
+            }
+        </style>
+
+        <app-location route="{{route}}"></app-location>
+        <app-route id="router" route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subRoute}}">
+        </app-route>
+
         <na-toolbar signed-in="[[signedIn]]" on-sign-out="signOut">
         </na-toolbar>
         <na-login on-sign-in="signIn" signed-in="[[signedIn]]" disabled="[[!online]]">
@@ -12,26 +35,25 @@
         <firebase-auth id="auth" app-name="lumio" provider="google" signed-in="{{signedIn}}" user="{{user}}">
         </firebase-auth>
 
-
-        <paper-fab icon="add" on-tap="create" disabled="[[!online]]" aria-label="Add note">
+        <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
         </paper-fab>
-        <na-editor id="editor" note="{{editableNote}}" on-close="commitChange">
-        </na-editor>
-        <firebase-document id="document" app-name="lumio" path="[[editableNoteId]]" data="{{editableNote}}">
-        </firebase-document>
+        <!-- <firebase-document id="document" app-name="lumio" path="[[editableNoteId]]" data="{{editableNote}}">
+        </firebase-document> -->
         <firebase-query id="query" app-name="lumio" path="/notes/[[user.uid]]" data="{{lumios}}">
         </firebase-query>
 
         <app-indexeddb-mirror session="[[user.uid]]" key="lumio" data="{{lumios}}" persisted-data="{{persistedLumios}}">
         </app-indexeddb-mirror>
 
-        <div class="notes">
-            <template is="dom-repeat" items="[[persistedLumios]]" as="note">
-                <na-note id$="[[note.$key]]" title="[[note.title]]" body="[[note.body]]" on-tap="edit">
-                </na-note>
-            </template>
+        <!-- <na-editor id="editor" note="{{editableNote}}" on-close="commitChange">
+        </na-editor> -->
+        <div class="app-area layout flex">
+            <neon-animated-pages class="layout flex" selected={{routeData.page}} attr-for-selected="path">
+                <loan-list path="" loans=[[persistedLumios]] selected-item="{{editableNote}}"></loan-list>
+                <loan-form path="loan-form" base-path=[[basePath(user)]] route={{subRoute}}></loan-form>
+                <!-- <loan-form path="manage" data=[[editableNote]] base-path=[[basePath(user)]]></loan-form> -->
+            </neon-animated-pages>
         </div>
-
     </template>
     <script>
         Polymer({
@@ -43,15 +65,25 @@
             get notesPath() {
                 return '/notes/' + this.user.uid;
             },
-
+            basePath: function(user) {
+                if(!user) return undefined;
+                return '/notes/' + user.uid;
+            },
             toEditableId: function (noteId) {
                 return this.notesPath + '/' + noteId;
             },
             get isEditable() {
                 return this.online;
+            },
+            newLoan: function () {
+                this.navigate('/loan-form');
+            },
+            navigate: function (path, state) {
+                window.history.pushState(state, undefined, path);
+                Polymer.Base.fire('location-changed', state, {
+                    node: window
+                });
             }
-
-
 
         });
     </script>

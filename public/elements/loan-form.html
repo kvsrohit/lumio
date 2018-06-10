@@ -1,0 +1,128 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../bower_components/oe-input/oe-input.html">
+<link rel="import" href="../bower_components/oe-date/oe-date.html">
+<link rel="import" href="../bower_components/oe-input/oe-decimal.html">
+<link rel="import" href="../bower_components/oe-ui-forms/behaviors/oe-form-validation-behavior.html">
+
+<dom-module id="loan-form">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-button {
+        color: var(--paper-purple-50);
+      }
+
+      .bottom {
+        position: absolute;
+        bottom: 0px;
+      }
+
+      .controls {
+        display: block;
+        position: relative;
+        margin: 10px auto;
+        width: calc(100vw - 20px);
+        max-width: 480px;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        justify-content: space-between;
+        transition: opacity 0.3s;
+        opacity: 1;
+      }
+    </style>
+    <!-- <div id="background"></div> -->
+    <firebase-document id="document" app-name="lumio" path="[[_dbDataPath(routeData)]]" data="{{dbData}}">
+    </firebase-document>
+
+    <app-route id="router" route="{{route}}" pattern="/:loanId" data="{{routeData}}" tail="{{subRoute}}">
+    </app-route>
+
+    <div class="layout vertical flex">
+      <div class="fields">
+        <oe-input required label="Name" field-id="name" value={{viewData.name}}></oe-input>
+        <oe-decimal required min=1 label="Amount" field-id="amount" value={{viewData.amount}}></oe-decimal>
+        <oe-date id="date" label="Start Date" field-id="startdate" value={{viewData.startDate}}></oe-decimal>
+      </div>
+      <div class="controls">
+        <paper-button on-tap="cancel">Cancel</paper-button>
+        <paper-button on-tap="save">Save</paper-button>
+      </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'loan-form',
+      behaviors: [OEUtils.FormValidationBehavior],
+      properties: {
+        basePath: {
+          type: String
+        },
+        route: {
+          type: Object
+        },
+        dbData: {
+          type: Object,
+          observer: '_dbDataChanged'
+        },
+        viewData: {
+          type: Object,
+          notify: true,
+          value: this.emptyData
+        }
+      },
+      emptyData: function () {
+            return {
+              startDate: this.$.date._parseShorthand('today'),
+              repaymentTerms: {
+                frequency: 'Monthly'
+              }
+            }
+          },
+      _viewDataChanged: function(vd){
+        console.log('View Data Changed to ', vd);
+      },
+      _dbDataChanged: function(dbData){
+        /* Set on the view */
+        console.log('New DB Data ', dbData);
+        if(this.$.document.path){
+          this.set('viewData', JSON.parse(JSON.stringify(dbData)));
+        } else {
+          this.set('viewData', this.emptyData());
+        }
+      },
+      _dbDataPath: function(routeData) {
+        return routeData && routeData.loanId?(this.basePath + '/' + routeData.loanId): undefined;
+      },
+      save: function () {
+        var self = this;
+        self.validateForm().then(function (state) {
+          if (state.valid) {
+            if(self.$.document.isNew){
+              return self.$.document.saveValue(self.basePath, self.routeData.loanId).then(function() {
+                self.$.document.reset();
+                //self.viewData = self.emptyData();
+              }.bind(this));
+            } else {
+              self.$.document.setStoredValue(self.$.document.path, JSON.parse(JSON.stringify(self.viewData))).then(function(){
+                self.$.document.reset();
+                //self.viewData = self.emptyData();
+              });
+            }
+          }
+        });
+      },
+      cancel: function (detail) {
+        this.fire('close', detail, {
+          bubbles: false
+        });
+      }
+    });
+  </script>
+</dom-module>

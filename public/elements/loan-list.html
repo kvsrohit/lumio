@@ -1,0 +1,71 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+<dom-module id="loan-list">
+  <template>
+    <style include="iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+        /* box-sizing: border-box; */
+        /* background-color: #fafafa; */
+        /* color: #212121;
+        padding: 1em;
+        @apply --paper-font-common-base;
+        @apply --shadow-elevation-2dp;
+        border-radius: 2px; */
+      }
+
+      .full {
+        height: 100px;
+        width: 100%;
+      }
+    </style>
+
+<div class="layout vertical full">
+    <paper-listbox selected={{selectedItem}} attr-for-selected="item">
+        <template is="dom-repeat" items=[[loans]]>
+            <paper-item style="margin: 5px; border-bottom: 1px solid red;" item=[[item]]>
+                <div class="layout flex horizontal">
+                    <div>
+                      <a href="/loan-form/[[item.$key]]">
+                      [[item.name]]
+                    </a>
+                    </div>
+                    <div class="flex layout horizontal center-justified">&#8377; [[formatNumber(item.amount)]]</div>
+                    <div>[[formatDate(item.startDate)]]</div>
+                </div>
+            </paper-item>
+        </template>
+    </paper-listbox>
+  </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'loan-list',
+
+      properties: {
+        loans: {
+          type: Array
+        },
+        selectedItem: {
+            type: Object,
+            notify: true
+        }
+      },
+      formatDate: function(d){
+          return timeago().format(d);
+      },
+      formatNumber: function(n){
+        if(n===undefined) {
+            return '-';
+        } else {
+            return n.toLocaleString('en-IN', { maximumSignificantDigits: 3 });
+        }
+      }
+    })
+  </script>
+</dom-module>
