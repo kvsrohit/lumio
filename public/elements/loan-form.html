@@ -3,9 +3,6 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
-<link rel="import" href="../bower_components/oe-input/oe-input.html">
-<link rel="import" href="../bower_components/oe-date/oe-date.html">
-<link rel="import" href="../bower_components/oe-input/oe-decimal.html">
 <link rel="import" href="../bower_components/oe-ui-forms/behaviors/oe-form-validation-behavior.html">
 <link rel="import" href="../behaviors/navigation-behavior.html">
 
@@ -43,6 +40,20 @@
         bottom: 1em;
         right: 1em;
       }
+
+               .toggle-btn-subtext {
+           font-size: 12px;
+           line-height: 24px;
+           font-style: italic;
+         }
+     
+         .toggle-btn-container {
+           display: flex;
+           flex-direction: row;
+           justify-content: space-between;
+         }
+
+
     </style>
     <!-- <div id="background"></div> -->
     <firebase-document id="document" app-name="lumio" path="[[_dbDataPath(routeData)]]" data="{{dbData}}">
@@ -54,8 +65,31 @@
     <div class="layout vertical flex">
       <div class="fields">
         <oe-input required label="Name" field-id="name" value={{viewData.name}}></oe-input>
-        <oe-decimal required min=1 label="Amount" field-id="amount" value={{viewData.amount}}></oe-decimal>
-        <oe-date id="date" label="Start Date" field-id="startdate" value={{viewData.startDate}}></oe-decimal>
+        <oe-decimal required min=1 label="Amount" field-id="amount" value={{viewData.amount}}>
+          <span prefix>&#8377;&nbsp;&nbsp;</span>
+        </oe-decimal>
+        <oe-decimal required min="0.01" label="Interest Rate" field-id="interestRate" value={{viewData.interestRate}}>
+          <span suffix>%</span>
+        </oe-decimal>
+        <oe-radio-group required label="Frequency" listdata='["Monthly", "Annual"]' field-id="interestFrequency" value={{viewData.interestFrequency}}></oe-radio-group>
+        <oe-date id="date" label="Start Date" field-id="startdate" value={{viewData.startDate}}></oe-date>
+        <!-- <div class="toggle-btn-container"> -->
+            <paper-toggle-button id="strict" checked="{{viewData.hasPenalty}}">Has Penalty</paper-toggle-button>
+            <!-- <div class="toggle-btn-subtext">Has Penalty</div>
+        </div> -->
+        <iron-collapse opened=[[viewData.hasPenalty]]>
+            <oe-radio-group required label="Penalty Type" listdata='["Fixed Amount", "Interest"]' field-id="penaltyType" value={{viewData.penaltyType}}></oe-radio-group>
+            <oe-decimal required min="0.01" label="Penalty Rate" field-id="penaltyRate" value={{viewData.penaltyRate}}>
+              <template is="dom-if" if=[[_penaltyIsFixed(viewData.penaltyType)]]>
+                  <span prefix>&#8377;&nbsp;&nbsp;</span>
+              </template>
+              <template is="dom-if" if=[[!_penaltyIsFixed(viewData.penaltyType)]]>
+                  <span suffix>%</span>
+                </template>
+                
+            </oe-decimal>
+          
+        </iron-collapse>
       </div>
       <div class="actions controls">
         <paper-button on-tap="cancel">Cancel</paper-button>
@@ -87,10 +121,16 @@
       emptyData: function () {
         return {
           startDate: this.$.date._parseShorthand('today'),
-          repaymentTerms: {
-            frequency: 'Monthly'
-          }
+          interestFrequency: 'Monthly',
+          interestDay: 1,
+          leasePeriod: 5,
+          hasPenalty: false,
+          penaltyType: 'Fixed Amount',
+          penaltyRate: 0
         }
+      },
+      _penaltyIsFixed:function(penaltyType){
+        return penaltyType==='Fixed Amount';
       },
       _dbDataChanged: function (dbData) {
         /* Set on the view */

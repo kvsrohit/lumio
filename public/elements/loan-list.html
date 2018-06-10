@@ -12,17 +12,10 @@
     <style include="iron-flex iron-flex-alignment">
       :host {
         display: block;
-        /* box-sizing: border-box; */
-        /* background-color: #fafafa; */
-        /* color: #212121;
-        padding: 1em;
-        @apply --paper-font-common-base;
-        @apply --shadow-elevation-2dp;
-        border-radius: 2px; */
       }
 
-      .full {
-        height: 100px;
+      .full-size {
+        height: 100%;
         width: 100%;
       }
 
@@ -35,10 +28,11 @@
     </style>
 
 
-<div class="layout vertical full">
+<div class="layout vertical full-size">
+  <template is="dom-if" if=[[loans.length]]>
     <paper-listbox selected={{selectedItem}} attr-for-selected="item">
         <template is="dom-repeat" items=[[loans]]>
-            <paper-item style="margin: 5px; border-bottom: 1px solid red;" item=[[item]]>
+            <paper-item style="margin: 5px; border-bottom: 1px solid #737373;" item=[[item]]>
                 <div class="layout flex horizontal">
                     <div>
                       <a href="/loan-form/[[item.$key]]">
@@ -53,7 +47,16 @@
     </paper-listbox>
     <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
       </paper-fab>
-      
+      </template>
+      <template is="dom-if" if=[[!loans.length]]>
+        <div class="layout flex"></div>
+        <div class="layout vertical center">
+            <label>Welcome!</label>
+            <label>You have not created any loans yet.</label>
+            <paper-button style="margin-top: 20px;" raised primary on-tap="newLoan">Create New</paper-button>    
+          </div>
+        <div class="layout flex"></div>
+      </template>
   </div>
   </template>
   <script>
