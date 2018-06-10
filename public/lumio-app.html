@@ -65,7 +65,7 @@
                 </na-toolbar>
             </app-header>
             <div class="app-area layout flex">
-                <neon-animated-pages class="layout flex full-size" selected={{routeData.page}} attr-for-selected="path">
+                <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{routeData.page}} attr-for-selected="path">
                     <loan-list path="" loans=[[persistedLumios]] selected-item="{{editableNote}}"></loan-list>
                     <loan-form path="loan-form" base-path=[[basePath(user)]] route={{subRoute}}></loan-form>
                     <!-- <loan-form path="manage" data=[[editableNote]] base-path=[[basePath(user)]]></loan-form> -->
@@ -79,7 +79,7 @@
         Polymer({
             is: 'lumio-app',
             behaviors: [Polymer.NoteAppBehavior, Polymer.NavigationBehavior],
-            observers:['_onlineChanged(online)'],
+            observers:['_onlineChanged(online)', '_routeChanged(route)'],
             signIn: function () {
                 this.$.auth.signInWithPopup();
             },
@@ -95,6 +95,12 @@
             },
             get isEditable() {
                 return this.online;
+            },
+            _routeChanged: function(route) {
+                /* Small hack to change /index.html as / */
+                if(route.path === '/index.html') {
+                    this.set('route.path','/');
+                }
             },
             _onlineChanged: function(online){
                 /* We don't want to show toast for first time */
