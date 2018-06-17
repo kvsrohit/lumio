@@ -30,7 +30,7 @@ function stubApplicable(loan) {
   return (loan.startDate.getUTCDate() != loan.interestDay);
 }
 
-function generateSchedule(loan, calcDate, generateEnding) {
+function generateSchedule(loan, calcDate) {
   if (typeof loan.startDate === 'string') {
     loan.startDate = new Date(loan.startDate);
   }
@@ -38,11 +38,11 @@ function generateSchedule(loan, calcDate, generateEnding) {
   var currentDate = startDate;
   var nextDate = _getNextDate(loan, currentDate);
 
-  var interests = [];
+  var schedule = {interests:[], accrued:{value: 0, date: calcDate}};
 
   if ((nextDate > startDate) && (nextDate < calcDate) && stubApplicable(loan)) {
     var interest = calculateInterest(loan, startDate, nextDate);
-    interests.push({
+    schedule.interests.push({
       value: interest,
       date: nextDate
     });
@@ -51,7 +51,7 @@ function generateSchedule(loan, calcDate, generateEnding) {
   }
   var periodInterest = getFullPeriodInterest(loan);
   while (nextDate <= calcDate) {
-    interests.push({
+    schedule.interests.push({
       value: periodInterest,
       date: nextDate
     });
@@ -59,15 +59,12 @@ function generateSchedule(loan, calcDate, generateEnding) {
     nextDate = _getNextDate(loan, nextDate);
   }
 
-  if (generateEnding && calcDate > currentDate) {
+  if (calcDate > currentDate) {
     //console.log('Add End Stub');
-    interests.push({
-      value: calculateInterest(loan, currentDate, calcDate),
-      date: calcDate
-    });
+    schedule.accrued.value = calculateInterest(loan, currentDate, calcDate);
   }
 
-  return interests;
+  return schedule;
 }
 
 module.exports = {

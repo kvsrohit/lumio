@@ -80,70 +80,77 @@ describe('Interest Calculation', function () {
   it('generateSchedule: No interest flows when calc-date is less than start date', function () {
     var calculationDate = loan.startDate;
     var schedule = Interest.generateSchedule(loan, calculationDate);
-    expect(schedule).to.be.empty;
+    expect(schedule).to.be.ok;
+    expect(schedule.interests).to.be.empty;
   });
 
   it('generateSchedule: generates start stub interest', function () {
     var calculationDate = new Date('2018-08-27T00:00:00.000Z');
     var schedule = Interest.generateSchedule(loan, calculationDate);
-    expect(schedule).to.not.be.empty;
-    expect(schedule.length).to.equal(6);
-    expect(schedule[0].date).to.deep.equal(new Date('2018-03-01T00:00:00.000Z'));
+    expect(schedule).to.be.ok;
+    expect(schedule.interests).to.not.be.empty;
+    expect(schedule.interests.length).to.equal(6);
+    expect(schedule.interests[0].date).to.deep.equal(new Date('2018-03-01T00:00:00.000Z'));
     var expected = Interest.round(loan.amount * loan.interestRate * (19 / 30) / 100);
-    expect(schedule[0].value).to.equal(expected);
+    expect(schedule.interests[0].value).to.equal(expected);
   });
   
   it('generateSchedule: generates period interest', function () {
     var calculationDate = new Date('2018-08-27T00:00:00.000Z');
     var schedule = Interest.generateSchedule(loan, calculationDate);
-    expect(schedule).to.not.be.empty;
-    expect(schedule.length).to.equal(6);
-    expect(schedule[1].date).to.deep.equal(new Date('2018-04-01T00:00:00.000Z'));
+    expect(schedule).to.be.ok;
+    expect(schedule.interests).to.not.be.empty;
+    expect(schedule.interests.length).to.equal(6);
+    expect(schedule.interests[1].date).to.deep.equal(new Date('2018-04-01T00:00:00.000Z'));
     var expected = Interest.round(loan.amount * loan.interestRate / 100);
-    expect(schedule[1].value).to.equal(expected);
+    expect(schedule.interests[1].value).to.equal(expected);
   });
 
   it('generateSchedule: generates end stub interest ', function () {
     var calculationDate = new Date('2018-08-27T00:00:00.000Z');
     var schedule = Interest.generateSchedule(loan, calculationDate, true);
-    expect(schedule).to.not.be.empty;
-    expect(schedule.length).to.equal(7);
-    expect(schedule[schedule.length-1].date).to.deep.equal(new Date('2018-08-27T00:00:00.000Z'));
+    expect(schedule).to.be.ok;
+    expect(schedule.accrued).to.be.ok;
+    expect(schedule.accrued.date).to.deep.equal(new Date('2018-08-27T00:00:00.000Z'));
     var expected = Interest.round(loan.amount * loan.interestRate * (26 / 30) / 100);
-    expect(schedule[schedule.length-1].value).to.equal(expected);
+    expect(schedule.accrued.value).to.equal(expected);
   });
 
   it('generateSchedule: generates correctly when interest payment date is different', function () {
     var calculationDate = new Date('2018-08-27T00:00:00.000Z');
     loan.interestDay = 18;
     var schedule = Interest.generateSchedule(loan, calculationDate, true);
-    expect(schedule).to.not.be.empty;
-    expect(schedule.length).to.equal(8);
+    expect(schedule).to.be.ok;
+    expect(schedule.interests).to.not.be.empty;
+    expect(schedule.interests.length).to.equal(7);
 
     /* First Stub 10th - to - 18th Feb */
-    expect(schedule[0].date).to.deep.equal(new Date('2018-02-18T00:00:00.000Z'));
+    expect(schedule.interests[0].date).to.deep.equal(new Date('2018-02-18T00:00:00.000Z'));
     var expected = Interest.round(loan.amount * loan.interestRate * (8 / 30) / 100);
-    expect(schedule[0].value).to.equal(expected);
+    expect(schedule.interests[0].value).to.equal(expected);
 
     /* Period Interest */
-    expect(schedule[1].date).to.deep.equal(new Date('2018-03-18T00:00:00.000Z'));
+    expect(schedule.interests[1].date).to.deep.equal(new Date('2018-03-18T00:00:00.000Z'));
     expected = Interest.round(loan.amount * loan.interestRate / 100);
 
     /* End Stub 18th - to - 27th Aug */
-    expect(schedule[schedule.length-1].date).to.deep.equal(new Date('2018-08-27T00:00:00.000Z'));
+    expect(schedule.accrued.date).to.deep.equal(new Date('2018-08-27T00:00:00.000Z'));
     expected = Interest.round(loan.amount * loan.interestRate * (9 / 30) / 100);
-    expect(schedule[schedule.length-1].value).to.equal(expected);
+    expect(schedule.accrued.value).to.equal(expected);
   });
 
   it('generateSchedule: generates correctly on interest payment date', function () {
     var calculationDate = new Date('2018-08-18T00:00:00.000Z');
     loan.interestDay = 18;
     var schedule = Interest.generateSchedule(loan, calculationDate, true);
-    expect(schedule).to.not.be.empty;
-    expect(schedule.length).to.equal(7);
-    expect(schedule[schedule.length-1].date).to.deep.equal(new Date('2018-08-18T00:00:00.000Z'));
+    expect(schedule).to.be.ok;
+    expect(schedule.interests).to.not.be.empty;
+    expect(schedule.interests.length).to.equal(7);
+    expect(schedule.interests[schedule.interests.length-1].date).to.deep.equal(new Date('2018-08-18T00:00:00.000Z'));
     var expected = Interest.round(loan.amount * loan.interestRate / 100);
-    expect(schedule[schedule.length-1].value).to.equal(expected);
+    expect(schedule.interests[schedule.interests.length-1].value).to.equal(expected);
+    expect(schedule.accrued.value).to.equal(0);
+    
   });
 
 });
