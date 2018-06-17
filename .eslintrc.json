@@ -3,10 +3,18 @@
         "browser": true
     },
     "extends": "eslint:recommended",
+    "globals": {
+        "module": true,
+        "require": true,
+        "it": true,
+        "describe": true,
+        "before": true,
+        "after": true
+    },
     "rules": {
         "indent": [
             "error",
-            "tab"
+            2
         ],
         "linebreak-style": [
             "error",
