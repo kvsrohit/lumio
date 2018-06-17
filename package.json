@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
+    "vulc": "vulcanize public\\all-imports.html --out-html public\\all-imports-vulc.html",
     "build": "webpack --mode=production",
     "dbuild": "webpack --mode=development"
   },
@@ -21,6 +22,7 @@
     "chai-things": "^0.2.0",
     "mocha": "^5.2.0",
     "timeago.js": "^3.0.2",
+    "vulcanize": "^1.16.0",
     "webpack": "^4.12.0",
     "webpack-cli": "^3.0.7"
   }
