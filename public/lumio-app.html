@@ -12,6 +12,7 @@
 
 <link rel="import" href="elements/loan-list.html">
 <link rel="import" href="elements/loan-form.html">
+<link rel="import" href="elements/loan-details.html">
 <link rel="import" href="behaviors/navigation-behavior.html">
 
 
@@ -67,7 +68,7 @@
                 <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{routeData.page}} attr-for-selected="path">
                     <loan-list path="" loans=[[persistedLumios]] selected-item="{{editableNote}}"></loan-list>
                     <loan-form path="loan-form" base-path=[[basePath(user)]] route={{subRoute}}></loan-form>
-                    <!-- <loan-form path="manage" data=[[editableNote]] base-path=[[basePath(user)]]></loan-form> -->
+                    <loan-details path="details" base-path=[[basePath(user)]] route={{subRoute}}></loan-details>
                 </neon-animated-pages>
             </div>
         </app-header-layout>

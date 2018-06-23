@@ -1,0 +1,32 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<script>
+  (function () {
+    'use strict';
+
+    /**
+     * @polymerBehavior Polymer.FormattingHelper
+     */
+    Polymer.FormattingHelper = {
+      asTimeAgo: function (d) {
+        return timeago().format(d);
+      },
+      formatDate: function (d, format) {
+        format = format || 'DD MMM YYYY';
+        if (d && typeof d === 'string') {
+          d = new Date(d);
+        }
+        return OEUtils.DateUtils.format(d, format);
+      },
+      formatNumber: function (n) {
+        if (n === undefined) {
+          return '-';
+        } else {
+          return n.toLocaleString('en-IN', {
+            maximumSignificantDigits: 3
+          });
+        }
+      }
+    };
+  })();
+</script>

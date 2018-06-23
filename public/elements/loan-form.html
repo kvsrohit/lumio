@@ -41,19 +41,17 @@
         right: 1em;
       }
 
-               .toggle-btn-subtext {
-           font-size: 12px;
-           line-height: 24px;
-           font-style: italic;
-         }
-     
-         .toggle-btn-container {
-           display: flex;
-           flex-direction: row;
-           justify-content: space-between;
-         }
+      .toggle-btn-subtext {
+        font-size: 12px;
+        line-height: 24px;
+        font-style: italic;
+      }
 
-
+      .toggle-btn-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
     </style>
     <!-- <div id="background"></div> -->
     <firebase-document id="document" app-name="lumio" path="[[_dbDataPath(routeData)]]" data="{{dbData}}">
@@ -74,21 +72,21 @@
         <oe-radio-group required label="Frequency" listdata='["Monthly", "Annual"]' field-id="interestFrequency" value={{viewData.interestFrequency}}></oe-radio-group>
         <oe-date id="date" label="Start Date" field-id="startdate" value={{viewData.startDate}}></oe-date>
         <!-- <div class="toggle-btn-container"> -->
-            <paper-toggle-button id="strict" checked="{{viewData.hasPenalty}}">Has Penalty</paper-toggle-button>
-            <!-- <div class="toggle-btn-subtext">Has Penalty</div>
+        <paper-toggle-button id="strict" checked="{{viewData.hasPenalty}}">Has Penalty</paper-toggle-button>
+        <!-- <div class="toggle-btn-subtext">Has Penalty</div>
         </div> -->
         <iron-collapse opened=[[viewData.hasPenalty]]>
-            <oe-radio-group required label="Penalty Type" listdata='["Fixed Amount", "Interest"]' field-id="penaltyType" value={{viewData.penaltyType}}></oe-radio-group>
-            <oe-decimal required label="Penalty Rate" field-id="penaltyRate" value={{viewData.penaltyRate}}>
-              <template is="dom-if" if=[[_penaltyIsFixed(viewData.penaltyType)]]>
-                  <span prefix>&#8377;&nbsp;&nbsp;</span>
-              </template>
-              <template is="dom-if" if=[[!_penaltyIsFixed(viewData.penaltyType)]]>
-                  <span suffix>%</span>
-                </template>
-                
-            </oe-decimal>
-          
+          <oe-radio-group required label="Penalty Type" listdata='["Fixed Amount", "Interest"]' field-id="penaltyType" value={{viewData.penaltyType}}></oe-radio-group>
+          <oe-decimal required label="Penalty Rate" field-id="penaltyRate" value={{viewData.penaltyRate}}>
+            <template is="dom-if" if=[[_penaltyIsFixed(viewData.penaltyType)]]>
+              <span prefix>&#8377;&nbsp;&nbsp;</span>
+            </template>
+            <template is="dom-if" if=[[!_penaltyIsFixed(viewData.penaltyType)]]>
+              <span suffix>%</span>
+            </template>
+
+          </oe-decimal>
+
         </iron-collapse>
       </div>
       <div class="actions controls">
@@ -129,8 +127,8 @@
           penaltyRate: 0
         }
       },
-      _penaltyIsFixed:function(penaltyType){
-        return penaltyType==='Fixed Amount';
+      _penaltyIsFixed: function (penaltyType) {
+        return penaltyType === 'Fixed Amount';
       },
       _dbDataChanged: function (dbData) {
         /* Set on the view */
