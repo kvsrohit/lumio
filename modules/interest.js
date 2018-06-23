@@ -46,6 +46,7 @@ function generateSchedule(loan, calcDate) {
     loan.startDate = new Date(loan.startDate);
   }
   var startDate = loan.startDate;
+  loan.interestDay = loan.interestDay || startDate.getUTCDate();
   var currentDate = startDate;
   var nextDate = _getNextDate(loan, currentDate);
 

@@ -11,6 +11,7 @@
 
 <link rel="import" href="../behaviors/navigation-behavior.html">
 <link rel="import" href="../behaviors/formatting-helper.html">
+<link rel="import" href="payment-form.html">
 
 <dom-module id="loan-details">
   <template>
@@ -18,15 +19,6 @@
       :host {
         display: block;
       }
-
-      paper-card {
-        width: 100%;
-        height: 100%;
-      }
-
-      /* paper-button {
-        color: var(--paper-purple-50);
-      } */
 
       .bottom {
         position: absolute;
@@ -52,21 +44,10 @@
         right: 1em;
       }
 
-      .toggle-btn-subtext {
-        font-size: 12px;
-        line-height: 24px;
-        font-style: italic;
+      .labels>div {
+        margin-top: 40px;
       }
 
-      .toggle-btn-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-      }
-
-.labels > div {
-  margin-top: 40px;
-}
       /* .label-details {
         @apply --layout-vertical;
       }
@@ -85,88 +66,95 @@
     </app-route>
 
 
-    <paper-card elevation="0">
-      <div class="layout vertical flex">
-        <div class="layout horizontal flex">
-          <h3 class="flex">{{viewData.name}}</h3>
-          <h3>&#8377; [[formatNumber(viewData.amount)]]</h3>
-          <paper-menu-button>
-              <paper-icon-button icon="menu" class="dropdown-trigger" slot="dropdown-trigger" alt="menu"></paper-icon-button>
-              <paper-listbox class="dropdown-content" slot="dropdown-content">
-                <paper-item>Edit</paper-item>
-                <paper-item>Delete</paper-item>
-                <paper-item>Repay</paper-item>
-                <paper-item>Pay Interest</paper-item>
-              </paper-listbox>
-            </paper-menu-button>
-          </div>
-        <paper-tabs selected={{selectedTab}}>
-          <paper-tab>Details</paper-tab>
-          <paper-tab>Interests</paper-tab>
-          <paper-tab>Payments</paper-tab>
-        </paper-tabs>
-
-        <neon-animated-pages selected={{selectedTab}}>
-          <div class="layout vertical labels">
-            <div class="layout horizontal flex">
-              <label class="layout flex">Interest Rate</label>
-              <label>[[viewData.interestRate]]%</label>
-            </div>
-            <div class="layout horizontal flex">
-              <label class="layout flex">Frequency</label>
-              <label>[[viewData.interestFrequency]]</label>
-            </div>
-            <div class="layout horizontal flex">
-              <label class="layout flex">Start Date</label>
-              <label>[[formatDate(viewData.startDate)]]</label>
-            </div>
-            <div class="layout horizontal flex">
-              <label class="layout flex">Penalty</label>
-              <label>[[_getPenaltyText(viewData)]]</label>
-            </div>
-            <div class="layout horizontal flex">
-              <label class="layout flex">Accrued Interest</label>
-              <label>&#8377;&nbsp;&nbsp;[[formatNumber(schedule.accrued.value)]]</label>
-            </div>
-          </div>
-          <div class="layout vertical">
-            <template is="dom-repeat" sort="sortItems" items=[[schedule.interests]]>
-              <paper-item>
-                  <label class="layout flex">[[formatDate(item.date)]]</label>
-                  <label>&#8377; [[formatNumber(item.value)]]</label>    
-              </paper-item>
-            </template>            
-          </div>
-          <div class="layout vertical">
-              <paper-fab class="actions" icon="add" on-tap="newPayment" disabled="[[!online]]" aria-label="Add note">
-                </paper-fab>
-        
-          </div>
-        </neon-animated-pages>
+    <div class="layout vertical flex">
+      <div class="layout horizontal flex">
+        <h3>
+          <iron-icon icon="arrow-back" on-tap="goBack"></iron-icon>
+        </h3>
+        <h3 class="flex">{{viewData.name}}</h3>
+        <h3>[[formatAmount(viewData.amount)]]</h3>
       </div>
-    </paper-card>
 
-    <!--
-      <div class="layout vertical flex">
 
-       <div class="fields">
-        <oe-input required label="Name" field-id="name" value={{viewData.name}}></oe-input>
-        <oe-decimal required min=1 label="Amount" field-id="amount" value={{viewData.amount}}>
-          <span prefix>&#8377;&nbsp;&nbsp;</span>
-        </oe-decimal>
-      </div>
-      <div class="actions controls">
-        <paper-button on-tap="cancel">Cancel</paper-button>
-        <paper-button disabled=[[!online]] on-tap="save">Save</paper-button>
-      </div>
-    </div> -->
+      <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{subRoute.path}} attr-for-selected="path">
+          <payment-form path="payment" on-save="savePayment" on-close="closePaymentForm"></payment-form>
+          <div path="">
+              <paper-tabs selected={{selectedTab}}>
+                  <paper-tab>Details</paper-tab>
+                  <paper-tab>Interests</paper-tab>
+                  <paper-tab>Payments</paper-tab>
+                </paper-tabs>
+                <neon-animated-pages selected={{selectedTab}}>
+                  <div class="layout vertical labels">
+                    <div class="layout horizontal flex">
+                      <label class="layout flex">Interest Rate</label>
+                      <label>[[viewData.interestRate]]%</label>
+                    </div>
+                    <div class="layout horizontal flex">
+                      <label class="layout flex">Frequency</label>
+                      <label>[[viewData.interestFrequency]]</label>
+                    </div>
+                    <div class="layout horizontal flex">
+                      <label class="layout flex">Start Date</label>
+                      <label>[[formatDate(viewData.startDate)]]</label>
+                    </div>
+                    <div class="layout horizontal flex">
+                      <label class="layout flex">Penalty</label>
+                      <label>[[_getPenaltyText(viewData)]]</label>
+                    </div>
+                    <div class="layout horizontal flex">
+                      <label class="layout flex">Accrued Interest</label>
+                      <label>[[formatAmount(schedule.accrued.value)]]</label>
+                    </div>
+                    <div class="actions controls">
+                      <paper-menu-button disabled=[[!online]] vertical-align="bottom">
+                        <paper-icon-button icon="menu" class="dropdown-trigger" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+                        <paper-listbox class="dropdown-content" slot="dropdown-content">
+                          <paper-item disabled=[[!online]] on-tap="_onEditLoan">
+                            <iron-icon icon="create"></iron-icon>&nbsp;Edit
+                          </paper-item>
+                          <paper-item disabled=[[!online]] on-tap="_onDeleteLoan">
+                            <iron-icon icon="delete"></iron-icon>&nbsp;Delete
+                          </paper-item>
+                          <paper-item disabled=[[!online]] on-tap="_onSettle">
+                            <iron-icon icon="done-all"></iron-icon>&nbsp;Settle
+                          </paper-item>
+                        </paper-listbox>
+                      </paper-menu-button>
+                      <paper-button disabled=[[!online]] on-tap="_onNewPayment">
+                        <iron-icon icon="payment"></iron-icon>&nbsp;New Payment
+                      </paper-button>
+                    </div>
+                  </div>
+                  <div class="layout vertical">
+                    <template is="dom-repeat" sort="sortItems" items=[[schedule.interests]]>
+                      <paper-item>
+                        <label class="layout flex">[[formatDate(item.date)]]</label>
+                        <label>[[formatAmount(item.value)]]</label>
+                      </paper-item>
+                    </template>
+                  </div>
+                  <div class="layout vertical">
+                      <template is="dom-repeat" sort="sortItems" items=[[viewData.payments]]>
+                          <paper-item on-hold="_onEditPayment">
+                            <label class="layout flex">[[formatDate(item.paymentDate)]]</label>
+                            <label>[[formatAmount(item.amount)]]</label>
+                          </paper-item>
+                        </template>
+                        <paper-fab class="actions" icon="payment" on-tap="_onNewPayment" disabled="[[!online]]" aria-label="Add Payment">
+                    </paper-fab>
+                  </div>
+                </neon-animated-pages>          
+          </div>
+      </neon-animated-pages>
+    </div>
   </template>
   <script>
     Polymer({
       is: 'loan-details',
       behaviors: [Polymer.FormattingHelper, Polymer.NavigationBehavior, Polymer.AppNetworkStatusBehavior],
       properties: {
-        selectedTab:{
+        selectedTab: {
           type: Number,
           value: 0
         },
@@ -189,13 +177,13 @@
       emptyData: function () {
         return {}
       },
-      sortItems: function(a, b){
+      sortItems: function (a, b) {
         return a.date < b.date;
       },
       _getPenaltyText: function (loan) {
         if (loan.hasPenalty) {
           if (loan.penaltyType === 'Fixed Amount') {
-            return '₹ ' + this.formatNumber(loan.penaltyRate) + ' Per Day';
+            return this.formatAmount(loan.penaltyRate) + ' Per Day';
           } else {
             return this.formatNumber(loan.penaltyRate) + '% Per Day';
           }
@@ -210,17 +198,69 @@
         /* Set on the view */
         if (this.$.document.path) {
           this.set('viewData', JSON.parse(JSON.stringify(dbData)));
-          var now = new Date();
-          var today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-          this.set('schedule', Interest.generateSchedule(this.viewData, today));
+          this.set('schedule', Interest.generateSchedule(this.viewData, this.today()));
         } else {
           this.set('viewData', this.emptyData());
           this.set('schedule', {});
         }
-
       },
       _dbDataPath: function (routeData) {
         return routeData && routeData.loanId ? (this.basePath + '/' + routeData.loanId) : undefined;
+      },
+      _onEditLoan: function () {
+        this.navigate('/loan-form/' + this.routeData.loanId);
+      },
+      goBack: function () {
+        this.navigate('/');
+      },
+      _onDeleteLoan: function () {
+        this.fire('oe-show-confirm', {
+          message: 'Delete this loan?',
+          ok: this._deleteLoan.bind(this)
+        });
+      },
+      _deleteLoan: function () {
+        this.$.document.destroy();
+        this.navigate('/');
+      },
+      _onSettle: function(){
+        var self = this;
+        var outStanding = self.viewData.amount + self.schedule.accrued.value;
+        self.fire('oe-show-confirm', {
+          message: 'Add ' + self.formatAmount(outStanding) + ' receipt and setttle loan?',
+          ok: function(){
+            self.fire('oe-show-success', 'Loan Settled');
+          }
+        });
+      },
+      _onNewPayment: function(){
+        this.set('subRoute.path', 'payment');
+      },
+      closePaymentForm: function(e){
+        this.set('subRoute.path', '');        
+      },
+      savePayment: function(e){
+        var payment = e.detail;
+        if(!payment.key) {
+          /* New Payment */
+          payment.key = this.quickGuid();
+          if(!this.dbData.payments){
+            this.set('dbData.payments', [JSON.parse(JSON.stringify(payment))]);
+            this.set('viewData.payments', [payment]);
+          } else {
+            this.push('dbData.payments', JSON.parse(JSON.stringify(payment)));
+            this.push('viewData.payments', payment);
+          }
+        } else {
+          /*Find and replace the element in payments array*/
+          this.viewData.payments = this.viewData.payments||[];
+          var index = this.viewData.payments.findIndex(function(v){
+            return v.key === payment.key;
+          });
+          this.set('dbData.payments.'+index, JSON.parse(JSON.stringify(payment)));
+          this.set('viewData.payments.'+index, payment);          
+        }
+        this.set('subRoute.path', '');        
       },
       save: function () {
         var self = this;

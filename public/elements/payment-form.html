@@ -1,0 +1,90 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../bower_components/oe-ui-forms/behaviors/oe-form-validation-behavior.html">
+<link rel="import" href="../behaviors/navigation-behavior.html">
+<link rel="import" href="../behaviors/formatting-helper.html">
+
+<dom-module id="payment-form">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .bottom {
+        position: absolute;
+        bottom: 0px;
+      }
+
+      .controls {
+        display: block;
+        position: relative;
+        margin: 10px auto;
+        width: calc(100vw - 20px);
+        max-width: 480px;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        justify-content: space-between;
+        transition: opacity 0.3s;
+        opacity: 1;
+      }
+
+      .actions {
+        position: fixed;
+        bottom: 1em;
+        right: 1em;
+      }
+
+    </style>
+
+    <div class="layout vertical flex">
+      <h4>Payment</h4>
+      <div class="fields">
+        <oe-decimal required min=1 label="Amount" field-id="amount" value={{vm.amount}}>
+          <span prefix>&#8377;&nbsp;&nbsp;</span>
+        </oe-decimal>
+        <oe-date id="paymentDate" label="Date" max="today" field-id="paymentDate" value={{vm.paymentDate}}></oe-date>
+      </div>
+      <div class="actions controls">
+        <paper-button on-tap="cancel">Cancel</paper-button>
+        <paper-button disabled=[[!online]] on-tap="save">Save</paper-button>
+      </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'payment-form',
+      behaviors: [OEUtils.FormValidationBehavior, Polymer.NavigationBehavior, Polymer.FormattingHelper, Polymer.AppNetworkStatusBehavior],
+      properties: {
+        vm: {
+          type: Object,
+          value:  function(){
+            return this.emptyData();
+          }
+        }
+      },
+      emptyData: function () {
+        return {
+          paymentDate: this.today(),
+          amount: 0
+        }
+      },
+      save: function () {
+        var self = this;
+        self.validateForm().then(function (state) {
+          if (state.valid) {
+            self.fire('save', self.vm);
+            self.set('vm', self.emptyData());
+          }
+        });
+      },
+      cancel: function (detail) {
+        this.set('vm', this.emptyData());
+        this.fire('close');
+      }
+    });
+  </script>
+</dom-module>

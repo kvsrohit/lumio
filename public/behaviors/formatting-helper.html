@@ -8,7 +8,7 @@
      * @polymerBehavior Polymer.FormattingHelper
      */
     Polymer.FormattingHelper = {
-      asTimeAgo: function (d) {
+      formatTimeAgo: function (d) {
         return timeago().format(d);
       },
       formatDate: function (d, format) {
@@ -18,15 +18,38 @@
         }
         return OEUtils.DateUtils.format(d, format);
       },
+      today: function () {
+        var now = new Date();
+        return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      },
+      formatAmount: function (n) {
+        if (n === undefined) {
+          return '-';
+        } else {
+          return n.toLocaleString('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            currencyDisplay: 'symbol',
+            maximumFractionDigits: 0,
+            minimumFractionDigits: 0
+          });
+        }
+      },
       formatNumber: function (n) {
         if (n === undefined) {
           return '-';
         } else {
           return n.toLocaleString('en-IN', {
-            maximumSignificantDigits: 3
+            maximumFractionDigits: 0,
+            minimumFractionDigits: 0
           });
         }
-      }
+      },
+      quickGuid: function () {
+    return Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15);
+    }
+
     };
   })();
 </script>

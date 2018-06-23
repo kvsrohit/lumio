@@ -27,7 +27,6 @@
       }
     </style>
 
-
     <div class="layout vertical full-size">
       <template is="dom-if" if=[[loans.length]]>
         <paper-listbox selected={{selectedItem}} attr-for-selected="item">
@@ -39,8 +38,8 @@
                     [[item.name]]
                   </a>
                 </div>
-                <div class="flex layout horizontal center-justified">&#8377; [[formatNumber(item.amount)]]</div>
-                <div>[[asTimeAgo(item.startDate)]]</div>
+                <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
+                <div>[[formatTimeAgo(item.startDate)]]</div>
               </div>
             </paper-item>
           </template>

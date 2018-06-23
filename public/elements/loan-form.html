@@ -5,6 +5,7 @@
 
 <link rel="import" href="../bower_components/oe-ui-forms/behaviors/oe-form-validation-behavior.html">
 <link rel="import" href="../behaviors/navigation-behavior.html">
+<link rel="import" href="../behaviors/formatting-helper.html">
 
 <dom-module id="loan-form">
   <template>
@@ -41,19 +42,7 @@
         right: 1em;
       }
 
-      .toggle-btn-subtext {
-        font-size: 12px;
-        line-height: 24px;
-        font-style: italic;
-      }
-
-      .toggle-btn-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-      }
     </style>
-    <!-- <div id="background"></div> -->
     <firebase-document id="document" app-name="lumio" path="[[_dbDataPath(routeData)]]" data="{{dbData}}">
     </firebase-document>
 
@@ -71,10 +60,7 @@
         </oe-decimal>
         <oe-radio-group required label="Frequency" listdata='["Monthly", "Annual"]' field-id="interestFrequency" value={{viewData.interestFrequency}}></oe-radio-group>
         <oe-date id="date" label="Start Date" field-id="startdate" value={{viewData.startDate}}></oe-date>
-        <!-- <div class="toggle-btn-container"> -->
         <paper-toggle-button id="strict" checked="{{viewData.hasPenalty}}">Has Penalty</paper-toggle-button>
-        <!-- <div class="toggle-btn-subtext">Has Penalty</div>
-        </div> -->
         <iron-collapse opened=[[viewData.hasPenalty]]>
           <oe-radio-group required label="Penalty Type" listdata='["Fixed Amount", "Interest"]' field-id="penaltyType" value={{viewData.penaltyType}}></oe-radio-group>
           <oe-decimal required label="Penalty Rate" field-id="penaltyRate" value={{viewData.penaltyRate}}>
@@ -84,9 +70,7 @@
             <template is="dom-if" if=[[!_penaltyIsFixed(viewData.penaltyType)]]>
               <span suffix>%</span>
             </template>
-
           </oe-decimal>
-
         </iron-collapse>
       </div>
       <div class="actions controls">
@@ -98,7 +82,7 @@
   <script>
     Polymer({
       is: 'loan-form',
-      behaviors: [OEUtils.FormValidationBehavior, Polymer.NavigationBehavior, Polymer.AppNetworkStatusBehavior],
+      behaviors: [OEUtils.FormValidationBehavior, Polymer.NavigationBehavior, Polymer.FormattingHelper, Polymer.AppNetworkStatusBehavior],
       properties: {
         basePath: {
           type: String
@@ -118,7 +102,7 @@
       },
       emptyData: function () {
         return {
-          startDate: this.$.date._parseShorthand('today'),
+          startDate: this.today(),
           interestFrequency: 'Monthly',
           interestDay: 1,
           leasePeriod: 5,
@@ -132,7 +116,6 @@
       },
       _dbDataChanged: function (dbData) {
         /* Set on the view */
-        console.log('New DB Data ', dbData);
         if (this.$.document.path) {
           this.set('viewData', JSON.parse(JSON.stringify(dbData)));
         } else {
@@ -151,14 +134,12 @@
               return self.$.document.saveValue(self.basePath).then(function () {
                 self.$.document.reset();
                 self.navigate('/');
-                //self.viewData = self.emptyData();
               }.bind(this));
             } else {
               self.$.document.setStoredValue(self.$.document.path, JSON.parse(JSON.stringify(self.viewData)))
                 .then(function () {
                   self.$.document.reset();
                   self.navigate('/');
-                  //self.viewData = self.emptyData();
                 });
             }
           }
