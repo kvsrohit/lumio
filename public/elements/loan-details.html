@@ -45,9 +45,19 @@
       }
 
       .labels>div {
-        margin-top: 40px;
+        padding-top: 30px;
       }
 
+      .light {
+        color: var(--secondary-text-color);
+      }
+      .aux {
+        color: var(--secondary-text-color);
+        font-size: 10;
+      }
+      .status-icon {
+        padding-left: 5px;
+      }
       /* .label-details {
         @apply --layout-vertical;
       }
@@ -77,75 +87,98 @@
 
 
       <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{subRoute.path}} attr-for-selected="path">
-          <payment-form path="payment" on-save="savePayment" on-close="closePaymentForm"></payment-form>
-          <div path="">
-              <paper-tabs selected={{selectedTab}}>
-                  <paper-tab>Details</paper-tab>
-                  <paper-tab>Interests</paper-tab>
-                  <paper-tab>Payments</paper-tab>
-                </paper-tabs>
-                <neon-animated-pages selected={{selectedTab}}>
-                  <div class="layout vertical labels">
-                    <div class="layout horizontal flex">
-                      <label class="layout flex">Interest Rate</label>
-                      <label>[[viewData.interestRate]]%</label>
-                    </div>
-                    <div class="layout horizontal flex">
-                      <label class="layout flex">Frequency</label>
-                      <label>[[viewData.interestFrequency]]</label>
-                    </div>
-                    <div class="layout horizontal flex">
-                      <label class="layout flex">Start Date</label>
-                      <label>[[formatDate(viewData.startDate)]]</label>
-                    </div>
-                    <div class="layout horizontal flex">
-                      <label class="layout flex">Penalty</label>
-                      <label>[[_getPenaltyText(viewData)]]</label>
-                    </div>
-                    <div class="layout horizontal flex">
-                      <label class="layout flex">Accrued Interest</label>
-                      <label>[[formatAmount(schedule.accrued.value)]]</label>
-                    </div>
-                    <div class="actions controls">
-                      <paper-menu-button disabled=[[!online]] vertical-align="bottom">
-                        <paper-icon-button icon="menu" class="dropdown-trigger" slot="dropdown-trigger" alt="menu"></paper-icon-button>
-                        <paper-listbox class="dropdown-content" slot="dropdown-content">
-                          <paper-item disabled=[[!online]] on-tap="_onEditLoan">
-                            <iron-icon icon="create"></iron-icon>&nbsp;Edit
-                          </paper-item>
-                          <paper-item disabled=[[!online]] on-tap="_onDeleteLoan">
-                            <iron-icon icon="delete"></iron-icon>&nbsp;Delete
-                          </paper-item>
-                          <paper-item disabled=[[!online]] on-tap="_onSettle">
-                            <iron-icon icon="done-all"></iron-icon>&nbsp;Settle
-                          </paper-item>
-                        </paper-listbox>
-                      </paper-menu-button>
-                      <paper-button disabled=[[!online]] on-tap="_onNewPayment">
-                        <iron-icon icon="payment"></iron-icon>&nbsp;New Payment
-                      </paper-button>
-                    </div>
-                  </div>
-                  <div class="layout vertical">
-                    <template is="dom-repeat" sort="sortItems" items=[[schedule.interests]]>
-                      <paper-item>
-                        <label class="layout flex">[[formatDate(item.date)]]</label>
-                        <label>[[formatAmount(item.value)]]</label>
-                      </paper-item>
-                    </template>
-                  </div>
-                  <div class="layout vertical">
-                      <template is="dom-repeat" sort="sortItems" items=[[viewData.payments]]>
-                          <paper-item on-hold="_onEditPayment">
-                            <label class="layout flex">[[formatDate(item.paymentDate)]]</label>
-                            <label>[[formatAmount(item.amount)]]</label>
-                          </paper-item>
-                        </template>
-                        <paper-fab class="actions" icon="payment" on-tap="_onNewPayment" disabled="[[!online]]" aria-label="Add Payment">
-                    </paper-fab>
-                  </div>
-                </neon-animated-pages>          
-          </div>
+        <payment-form path="payment" on-save="savePayment" on-close="closePaymentForm"></payment-form>
+        <div path="">
+          <paper-tabs selected={{selectedTab}}>
+            <paper-tab>Details</paper-tab>
+            <paper-tab>Interests</paper-tab>
+            <paper-tab>Payments</paper-tab>
+          </paper-tabs>
+          <neon-animated-pages selected={{selectedTab}}>
+            <div class="layout vertical labels">
+              <div class="layout horizontal flex">
+                <label class="layout flex light">Interest Due</label>
+                <label>[[formatAmount(schedule.outstandingInterest)]]</label>
+              </div>
+              <div class="layout horizontal flex">
+                <label class="layout flex">Accrued Interest</label>
+                <label>[[formatAmount(schedule.accrued.amount)]]</label>
+              </div>
+              <div class="layout horizontal flex">
+                <label class="layout flex">Outstanding Principal</label>
+                <label>[[formatAmount(schedule.outstandingPrincipal)]]</label>
+              </div>
+              <div class="layout horizontal flex">
+                <label class="layout flex">Total Outstanding</label>
+                <label>[[formatAmount(schedule.outstandingAmount)]]</label>
+              </div>
+              <br>
+              <div class="layout horizontal flex">
+                <label class="layout flex">Interest Rate</label>
+                <label>[[viewData.interestRate]]%</label>
+              </div>
+              <div class="layout horizontal flex">
+                <label class="layout flex">Frequency</label>
+                <label>[[viewData.interestFrequency]]</label>
+              </div>
+              <div class="layout horizontal flex">
+                <label class="layout flex">Start Date</label>
+                <label>[[formatDate(viewData.startDate)]]</label>
+              </div>
+              <div class="layout horizontal flex">
+                <label class="layout flex">Penalty</label>
+                <label>[[_getPenaltyText(viewData)]]</label>
+              </div>
+              <div class="actions controls">
+                <paper-menu-button disabled=[[!online]] vertical-align="bottom">
+                  <paper-icon-button icon="menu" class="dropdown-trigger" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+                  <paper-listbox class="dropdown-content" slot="dropdown-content">
+                    <paper-item disabled=[[!online]] on-tap="_onEditLoan">
+                      <iron-icon icon="create"></iron-icon>&nbsp;Edit
+                    </paper-item>
+                    <paper-item disabled=[[!online]] on-tap="_onDeleteLoan">
+                      <iron-icon icon="delete"></iron-icon>&nbsp;Delete
+                    </paper-item>
+                    <paper-item disabled=[[!online]] on-tap="_onSettle">
+                      <iron-icon icon="done-all"></iron-icon>&nbsp;Settle
+                    </paper-item>
+                  </paper-listbox>
+                </paper-menu-button>
+                <paper-button raised disabled=[[!online]] on-tap="_onNewPayment">
+                  New Payment
+                </paper-button>
+              </div>
+            </div>
+            <div class="layout vertical">
+              <template is="dom-repeat" sort="sortItems" items=[[schedule.interests]]>
+                <paper-item focused={{item.focused}}>
+                  <label class="layout flex">[[formatDate(item.date)]]</label>
+
+                  <template is="dom-if" if="[[_showOutstanding(item)]]">
+                      <label class="aux">[[formatAmount(item.outstanding)]]/</label>                    
+                  </template>
+                  <label>[[formatAmount(item.amount)]]</label>
+                  <iron-icon class="status-icon" icon=[[_paymentStatus(item.status)]]></iron-icon>
+
+                  <template is="dom-if" if=[[item.focused]]>
+                    
+                  </template>
+
+                </paper-item>
+              </template>
+            </div>
+            <div class="layout vertical">
+              <template is="dom-repeat" sort="sortItems" items=[[viewData.payments]]>
+                <paper-item on-hold="_onEditPayment">
+                  <label class="layout flex">[[formatDate(item.paymentDate)]]</label>
+                  <label>[[formatAmount(item.amount)]]</label>
+                </paper-item>
+              </template>
+              <paper-fab class="actions" icon="payment" on-tap="_onNewPayment" disabled="[[!online]]" aria-label="Add Payment">
+              </paper-fab>
+            </div>
+          </neon-animated-pages>
+        </div>
       </neon-animated-pages>
     </div>
   </template>
@@ -180,6 +213,26 @@
       sortItems: function (a, b) {
         return a.date < b.date;
       },
+      _paymentStatus: function (status) {
+        switch (status) {
+          case 'pending':
+            {
+              return 'error-outline';
+            }
+          case 'paid':
+            {
+              return 'done-all';
+
+            }
+          case 'partial':
+            {
+              return 'opacity';
+            }
+        }
+      },
+      _showOutstanding: function(item){
+        return item.outstanding !== 0 && item.outstanding !== item.amount;
+      },
       _getPenaltyText: function (loan) {
         if (loan.hasPenalty) {
           if (loan.penaltyType === 'Fixed Amount') {
@@ -198,7 +251,7 @@
         /* Set on the view */
         if (this.$.document.path) {
           this.set('viewData', JSON.parse(JSON.stringify(dbData)));
-          this.set('schedule', Interest.generateSchedule(this.viewData, this.today()));
+          this.set('schedule', Interest.getAnalytics(this.viewData, this.today()));
         } else {
           this.set('viewData', this.emptyData());
           this.set('schedule', {});
@@ -223,28 +276,27 @@
         this.$.document.destroy();
         this.navigate('/');
       },
-      _onSettle: function(){
+      _onSettle: function () {
         var self = this;
-        var outStanding = self.viewData.amount + self.schedule.accrued.value;
         self.fire('oe-show-confirm', {
-          message: 'Add ' + self.formatAmount(outStanding) + ' receipt and setttle loan?',
-          ok: function(){
+          message: 'Add ' + self.formatAmount(self.schedule.outstandingAmount) + ' receipt and setttle loan?',
+          ok: function () {
             self.fire('oe-show-success', 'Loan Settled');
           }
         });
       },
-      _onNewPayment: function(){
+      _onNewPayment: function () {
         this.set('subRoute.path', 'payment');
       },
-      closePaymentForm: function(e){
-        this.set('subRoute.path', '');        
+      closePaymentForm: function (e) {
+        this.set('subRoute.path', '');
       },
-      savePayment: function(e){
+      savePayment: function (e) {
         var payment = e.detail;
-        if(!payment.key) {
+        if (!payment.key) {
           /* New Payment */
           payment.key = this.quickGuid();
-          if(!this.dbData.payments){
+          if (!this.dbData.payments) {
             this.set('dbData.payments', [JSON.parse(JSON.stringify(payment))]);
             this.set('viewData.payments', [payment]);
           } else {
@@ -253,14 +305,18 @@
           }
         } else {
           /*Find and replace the element in payments array*/
-          this.viewData.payments = this.viewData.payments||[];
-          var index = this.viewData.payments.findIndex(function(v){
+          this.viewData.payments = this.viewData.payments || [];
+          var index = this.viewData.payments.findIndex(function (v) {
             return v.key === payment.key;
           });
-          this.set('dbData.payments.'+index, JSON.parse(JSON.stringify(payment)));
-          this.set('viewData.payments.'+index, payment);          
+          this.set('dbData.payments.' + index, JSON.parse(JSON.stringify(payment)));
+          this.set('viewData.payments.' + index, payment);
         }
-        this.set('subRoute.path', '');        
+
+        /* Revalue once a payment has been added/modified */
+        this.set('schedule', Interest.getAnalytics(this.viewData, this.today()));
+
+        this.set('subRoute.path', '');
       },
       save: function () {
         var self = this;

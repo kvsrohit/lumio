@@ -25,14 +25,18 @@
         bottom: 1em;
         right: 1em;
       }
+      .loan-item {
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--light-primary-color);
+      }
     </style>
 
     <div class="layout vertical full-size">
       <template is="dom-if" if=[[loans.length]]>
         <paper-listbox selected={{selectedItem}} attr-for-selected="item">
           <template is="dom-repeat" items=[[loans]]>
-            <paper-item on-tap="viewDetails" style="margin: 5px; border-bottom: 1px solid #737373;" item=[[item]]>
-              <div class="layout flex horizontal">
+            <paper-item on-tap="viewDetails"  item=[[item]]>
+              <div class="layout flex horizontal loan-item">
                 <div>
                   <a href="/loan-form/[[item.$key]]">
                     [[item.name]]

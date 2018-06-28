@@ -10,30 +10,30 @@ function _getNextDate(loan, current) {
 function _addDays(start, n) {
   //var ret = new Date(start.getTime());
   //ret.setUTCDate(ret.getUTCDate()+n);
-  return new Date(start.getTime()+(n*24*3600*1000));
+  return new Date(start.getTime() + (n * 24 * 3600 * 1000));
 }
 
 function _getDays(start, end) {
   return Math.floor((end - start) / (24 * 3600 * 1000));
 }
 
-function round(num) {
-  //return Math.round( num * 100 + Number.EPSILON ) / 100;
+function roundAmount(num) {
+  //return Math.roundAmount( num * 100 + Number.EPSILON ) / 100;
   return Math.round(num);
 }
 
-function calculateInterestForLoan(loan, start, end){
+function _calculateInterestForLoan(loan, start, end) {
   return calculateInterest(loan.amount, loan.interestRate, loan.interestFrequency, start, end);
 }
 
 function calculateInterest(amount, rate, frequency, start, end) {
   var days = _getDays(start, end);
   var periodLength = frequency === 'Monthly' ? 30 : 360;
-  return getInterestForPeriod(amount, rate, days/periodLength);
+  return getInterestForPeriod(amount, rate, days / periodLength);
 }
 
 function getInterestForPeriod(amount, rate, period) {
-  return round(amount * rate * period / 100);
+  return roundAmount(amount * rate * period / 100);
 }
 
 function getFullPeriodInterest(loan) {
@@ -63,7 +63,7 @@ function generateSchedule(loan, calcDate) {
   loan.interestDay = loan.interestDay || startDate.getUTCDate();
 
   var outstandingPrincipal = loan.amount;
-  var principalFlows = loan.principalFlows?loan.principalFlows.slice():[];
+  var principalFlows = _prepareFlows(loan.payments, 'principal');
 
   var currentDate = startDate;
   var nextDate = _getNextDate(loan, currentDate);
@@ -81,7 +81,7 @@ function generateSchedule(loan, calcDate) {
   var periodInterest = getInterestForPeriod(outstandingPrincipal, loan.interestRate, 1);
   while (nextDate <= calcDate) {
 
-    while(principalFlows.length>0 && principalFlows[0].date < _addDays(currentDate, loan.leasePeriod)){
+    while (principalFlows.length > 0 && principalFlows[0].date < _addDays(currentDate, loan.leasePeriod)) {
       outstandingPrincipal -= principalFlows[0].amount;
       principalFlows.shift();
       periodInterest = getInterestForPeriod(outstandingPrincipal, loan.interestRate, 1);
@@ -105,17 +105,18 @@ function generateSchedule(loan, calcDate) {
   return schedule;
 }
 
-function _prepareFlows(flows){
+function _prepareFlows(flows, type) {
   flows = flows || [];
-  flows.forEach(function(v) {
-    if(typeof v.date === 'string'){
+  flows.forEach(function (v) {
+    if (typeof v.date === 'string') {
       v.date = new Date(v.date);
     }
   });
-  flows.sort(function(a, b){
+  return flows.filter(function (v) {
+    return v.type === type;
+  }).sort(function (a, b) {
     return a.date > b.date;
   });
-  return flows;
 }
 
 function getAnalytics(loan, calcDate) {
@@ -124,48 +125,46 @@ function getAnalytics(loan, calcDate) {
   if (typeof loan.startDate === 'string') {
     loan.startDate = new Date(loan.startDate);
   }
-  /* Prepare the value-date data-type and sort the principal flows */
-  loan.principalFlows = _prepareFlows(loan.principalFlows);
-  loan.interestFlows = _prepareFlows(loan.interestFlows);
-  
+
   var schedule = generateSchedule(loan, calcDate);
-  var interestFlows = loan.interestFlows.slice();
+  /* Prepare the value-date data-type and sorted interest flows */
+  var interestFlows = _prepareFlows(loan.payments, 'interest');
   var overPayment = 0; /* Residue from previous additional payment */
   schedule.outstandingInterest = 0;
-  schedule.interests.forEach(function(item) {
-    item.status = 'pending';
-    var outstanding = item.amount-overPayment;
+  schedule.interests.forEach(function (item) {
+    var outstanding = item.amount - overPayment;
 
-    if(outstanding>0){
+    if (outstanding > 0) {
       overPayment = 0;
-      while(outstanding>0 && interestFlows.length>0){
-        item.status = 'partial';
+      while (outstanding > 0 && interestFlows.length > 0) {
         outstanding -= interestFlows[0].amount;
         interestFlows.shift();
-        if(outstanding<0) {
+        if (outstanding < 0) {
           overPayment = -outstanding;
           outstanding = 0;
-          item.status = 'paid';
         }
       }
       item.outstanding = outstanding;
     } else {
       item.outstanding = 0;
-      item.status = 'paid';
       overPayment = -outstanding;
+    }
+    if (item.outstanding === 0) {
+      item.status = 'paid';
+    } else if (item.outstanding < item.amount) {
+      item.status = 'partial';
+    } else {
+      item.status = 'pending';
     }
     schedule.outstandingInterest += item.outstanding;
   });
   schedule.overPayment = overPayment;
-  schedule.outstandingAmount = schedule.outstandingPrincipal + schedule.outstandingInterest - schedule.overPayment;
+  schedule.outstandingAmount = schedule.outstandingPrincipal + schedule.outstandingInterest + schedule.accrued.amount - schedule.overPayment;
   return schedule;
 }
 
-
-
-
 module.exports = {
-  round: round,
+  roundAmount: roundAmount,
   stubApplicable: stubApplicable,
   calculateInterest: calculateInterest,
   getFullPeriodInterest: getFullPeriodInterest,
