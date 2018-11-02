@@ -4,6 +4,8 @@
 
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../behaviors/navigation-behavior.html">
 <link rel="import" href="../behaviors/formatting-helper.html">
 
@@ -25,29 +27,71 @@
         bottom: 1em;
         right: 1em;
       }
+
       .loan-item {
         padding-bottom: 5px;
-        border-bottom: 1px solid var(--light-primary-color);
+        /* border-bottom: 1px solid var(--light-primary-color); */
       }
+
+      paper-card .card-actions {
+        padding: 0px;
+      }
+      paper-item .actions {
+        display: none;
+        font-weight: 400;
+      }
+
+      paper-item.iron-selected .actions {
+        display: inline;
+        /* animation-duration: 3s;
+        animation-name: slidedown; */
+      }
+
+      /* @keyframes slidedown {
+        from {
+          margin-top: 500px;
+        }
+
+        to {
+          margin-top: 5px;
+        }
+      } */
     </style>
 
     <div class="layout vertical full-size">
       <template is="dom-if" if=[[loans.length]]>
         <paper-listbox selected={{selectedItem}} attr-for-selected="item">
           <template is="dom-repeat" items=[[loans]]>
-            <paper-item on-tap="viewDetails"  item=[[item]]>
-              <div class="layout flex horizontal loan-item">
-                <div>
-                  <a href="/loan-form/[[item.$key]]">
-                    [[item.name]]
-                  </a>
+            <paper-item on-tap="_getAnalytics" focused={{item.focused}} item=[[item]]>
+              <div class="layout flex loan-item">
+                <div class="layout flex horizontal">
+                  <div>
+                    <a href="/loan-form/[[item.$key]]">
+                      [[item.name]]
+                    </a>
+                  </div>
+                  <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
+                  <div>[[formatTimeAgo(item.startDate)]]</div>
                 </div>
-                <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
-                <div>[[formatTimeAgo(item.startDate)]]</div>
+                <!-- <div class="actions layout flex vertical"> -->
+                  <paper-card class="actions">
+                  <div class="card-content layout horizontal wrap">
+                      <oe-info on-tap="_makePayment" class="flex" label="Interest Outstanding" value=[[formatAmount(schedule.outstandingInterest)]]></oe-info>
+                      <oe-info on-tap="_settleLoan" class="flex" label="Total Outstanding" value=[[formatAmount(schedule.outstandingAmount)]]></oe-info>
+                  </div>
+                  <div class="card-actions layout horizontal">
+                      <paper-button on-tap="viewDetails">More...</paper-button>
+                      <div class="flex"></div>
+                      <paper-icon-button icon="create" on-tap="edit"></paper-icon-button>
+                  </div>
+                </paper-card>
+                <!-- </div> -->
               </div>
+
             </paper-item>
           </template>
         </paper-listbox>
+
         <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
         </paper-fab>
       </template>
@@ -68,20 +112,34 @@
       behaviors: [Polymer.NavigationBehavior, Polymer.FormattingHelper, Polymer.AppNetworkStatusBehavior],
       properties: {
         loans: {
-          type: Array
+          type: Array,
+          observer: '_lc'
         },
         selectedItem: {
           type: Object,
           notify: true
         }
       },
+      _lc: function (nl, ol) {
+        console.log('Loan Changed ', ol, nl);
+      },
+      _open: function (i) {
+        return i ? true : false;
+      },
+      _getAnalytics: function(evt){
+        this.set('schedule', Interest.getAnalytics(evt.model.item, this.today()));
+      },
+      _makePayment: function (evt) {
+        this.navigate('/details/' + evt.model.item.$key+'/payment');
+      },
       newLoan: function () {
         this.navigate('/loan-form');
       },
       viewDetails: function (e) {
-        if(!e.target.href){
-          this.navigate('/details/'+e.model.item.$key);
-        }
+        this.navigate('/details/' + e.model.item.$key);
+      },
+      edit: function (e) {
+        this.navigate('/loan-form/' + e.model.item.$key);
       }
     })
   </script>

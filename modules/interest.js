@@ -158,6 +158,11 @@ function getAnalytics(loan, calcDate) {
     }
     schedule.outstandingInterest += item.outstanding;
   });
+  if (loan.payments && loan.payments.length > 0) {
+    schedule.lastPayment = loan.payments.sort(function (a, b) {
+      return a.date < b.date;
+    })[0];
+  }
   schedule.overPayment = overPayment;
   schedule.outstandingAmount = schedule.outstandingPrincipal + schedule.outstandingInterest + schedule.accrued.amount - schedule.overPayment;
   return schedule;

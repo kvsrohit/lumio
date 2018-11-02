@@ -87,7 +87,7 @@
 
 
       <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{subRoute.path}} attr-for-selected="path">
-        <payment-form path="payment" on-save="savePayment" on-close="closePaymentForm"></payment-form>
+        <payment-form path="/payment" on-save="savePayment" on-close="closePaymentForm"></payment-form>
         <div path="">
           <paper-tabs selected={{selectedTab}}>
             <paper-tab>Details</paper-tab>
@@ -186,6 +186,9 @@
     Polymer({
       is: 'loan-details',
       behaviors: [Polymer.FormattingHelper, Polymer.NavigationBehavior, Polymer.AppNetworkStatusBehavior],
+      observers:[
+        '_dbDataChanged(dbData.*)'
+      ],
       properties: {
         selectedTab: {
           type: Number,
@@ -198,8 +201,7 @@
           type: Object
         },
         dbData: {
-          type: Object,
-          observer: '_dbDataChanged'
+          type: Object
         },
         viewData: {
           type: Object,
@@ -247,7 +249,8 @@
       _penaltyIsFixed: function (penaltyType) {
         return penaltyType === 'Fixed Amount';
       },
-      _dbDataChanged: function (dbData) {
+      _dbDataChanged: function (changes) {
+        var dbData = changes.base;
         /* Set on the view */
         if (this.$.document.path) {
           this.set('viewData', JSON.parse(JSON.stringify(dbData)));
@@ -286,7 +289,7 @@
         });
       },
       _onNewPayment: function () {
-        this.set('subRoute.path', 'payment');
+        this.set('subRoute.path', '/payment');
       },
       closePaymentForm: function (e) {
         this.set('subRoute.path', '');
