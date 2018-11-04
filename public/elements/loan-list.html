@@ -76,7 +76,7 @@
                 <!-- <div class="actions layout flex vertical"> -->
                   <paper-card class="actions">
                   <div class="card-content layout horizontal wrap">
-                      <oe-info on-tap="_makePayment" class="flex" label="Interest Outstanding" value=[[formatAmount(schedule.outstandingInterest)]]></oe-info>
+                      <oe-info on-tap="_makePayment" class="flex" label="Interest Outstanding" value=[[formatAmount(schedule.overdueInterest)]]></oe-info>
                       <oe-info on-tap="_settleLoan" class="flex" label="Total Outstanding" value=[[formatAmount(schedule.outstandingAmount)]]></oe-info>
                   </div>
                   <div class="card-actions layout horizontal">

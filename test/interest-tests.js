@@ -1,21 +1,19 @@
-
 var chai = require('chai');
 chai.use(require('chai-things'));
 var expect = chai.expect;
 
 var Interest = require('../modules/interest');
 describe('Interest Calculation', function () {
-  this.timeout(20000);
   var loan;
 
   function dateAfter(input, days, month, year) {
-    return new Date(Date.UTC(input.getUTCFullYear()+(year||0), input.getUTCMonth()+(month||0), input.getUTCDate()+(days||0)));
+    return new Date(Date.UTC(input.getUTCFullYear() + (year || 0), input.getUTCMonth() + (month || 0), input.getUTCDate() + (days || 0)));
   }
   beforeEach('before', function (done) {
     loan = {
       amount: 20000,
       hasPenalty: false,
-      interestDay: 1,
+      paymentDay: 1,
       interestFrequency: 'Monthly',
       interestRate: 2,
       leasePeriod: 5,
@@ -32,11 +30,12 @@ describe('Interest Calculation', function () {
   });
 
   it('stubApplicable: returns true when interest day is not start-day', function () {
-    loan.interestDay = 11;
+    loan.paymentDay = 11;
     expect(Interest.stubApplicable(loan)).to.be.true;
   });
+
   it('stubApplicable: returns false when interest day and start-day are same', function () {
-    loan.interestDay = 10;
+    loan.paymentDay = 10;
     expect(Interest.stubApplicable(loan)).to.be.false;
   });
 
@@ -62,7 +61,6 @@ describe('Interest Calculation', function () {
     var expected = Interest.roundAmount(loan.amount * loan.interestRate * (58 / 360) / 100);
     expect(interest).to.equal(expected);
   });
-
 
   it('getFullPeriodInterest: Calculates interest for period', function () {
     var interest = Interest.getFullPeriodInterest(loan);
@@ -94,7 +92,7 @@ describe('Interest Calculation', function () {
     var expected = Interest.roundAmount(loan.amount * loan.interestRate * (19 / 30) / 100);
     expect(schedule.interests[0].amount).to.equal(expected);
   });
-  
+
   it('generateSchedule: generates period interest', function () {
     var calculationDate = new Date('2018-08-27T00:00:00.000Z');
     var schedule = Interest.generateSchedule(loan, calculationDate);
@@ -118,7 +116,7 @@ describe('Interest Calculation', function () {
 
   it('generateSchedule: generates correctly when interest payment date is different', function () {
     var calculationDate = new Date('2018-08-27T00:00:00.000Z');
-    loan.interestDay = 18;
+    loan.paymentDay = 18;
     var schedule = Interest.generateSchedule(loan, calculationDate);
     expect(schedule).to.be.ok;
     expect(schedule.interests).to.not.be.empty;
@@ -141,35 +139,31 @@ describe('Interest Calculation', function () {
 
   it('generateSchedule: generates correctly on interest payment date', function () {
     var calculationDate = new Date('2018-08-18T00:00:00.000Z');
-    loan.interestDay = 18;
+    loan.paymentDay = 18;
     var schedule = Interest.generateSchedule(loan, calculationDate);
     expect(schedule).to.be.ok;
     expect(schedule.interests).to.not.be.empty;
     expect(schedule.interests.length).to.equal(7);
-    expect(schedule.interests[schedule.interests.length-1].date).to.deep.equal(new Date('2018-08-18T00:00:00.000Z'));
+    expect(schedule.interests[schedule.interests.length - 1].date).to.deep.equal(new Date('2018-08-18T00:00:00.000Z'));
     var expected = Interest.roundAmount(loan.amount * loan.interestRate / 100);
-    expect(schedule.interests[schedule.interests.length-1].amount).to.equal(expected);
+    expect(schedule.interests[schedule.interests.length - 1].amount).to.equal(expected);
     expect(schedule.accrued.amount).to.equal(0);
   });
 
-  it('generateSchedule: applies the principal-flows correctly', function(){
+  it('generateSchedule: applies the principal-flows correctly', function () {
     var calculationDate = new Date('2018-09-18T00:00:00.000Z');
     loan.payments = [{
       date: new Date('2018-04-04T00:00:00.000Z'),
-      type: 'principal',
-      amount: 5000
+      principal: 5000
     }, {
       date: new Date('2018-06-11T00:00:00.000Z'),
-      type: 'principal',
-      amount: 5000
+      principal: 5000
     }, {
       date: new Date('2018-07-28T00:00:00.000Z'),
-      type: 'principal',
-      amount: -4000
+      principal: -4000
     }, {
       date: new Date('2018-10-11T00:00:00.000Z'),
-      type: 'principal',
-      amount: 5000
+      principal: 5000
     }];
     var schedule = Interest.generateSchedule(loan, calculationDate);
 
@@ -191,30 +185,60 @@ describe('Interest Calculation', function () {
 
     /* The principal increase is considered correctly */
     expect(schedule.interests[6].amount).to.equal(280);
-    expect(schedule.interests[6].principal).to.equal(14000);    
+    expect(schedule.interests[6].principal).to.equal(14000);
   });
 
-  it('getAnalytics: applies the interest-flows correctly', function(){
+  it('getAnalytics: applies the interest-flows correctly', function () {
     var calculationDate = new Date('2018-07-18T00:00:00.000Z');
     loan.payments = [{
       date: new Date('2018-04-04T00:00:00.000Z'),
-      type: 'interest',
-      amount: 300
+      interest: 300
     }, {
       date: new Date('2018-05-11T00:00:00.000Z'),
-      type: 'interest',
-      amount: 400
+      interest: 400
     }, {
       date: new Date('2018-06-28T00:00:00.000Z'),
-      type: 'interest',
-      amount: 450
+      interest: 450
     }, {
       date: new Date('2018-06-28T00:00:00.000Z'),
-      type: 'interest',
-      amount: 650
+      interest: 650
     }];
     var schedule = Interest.getAnalytics(loan, calculationDate);
-    console.log(schedule);
-  });
 
+    /* No Amortization : No pricipal flows generated */
+    expect(schedule.principals).to.be.an('array').that.is.empty;
+
+    /* No principal repayments */
+    expect(schedule.outstandingPrincipal).to.equal(loan.amount);
+
+    /* Starting 10-feb to calc-date 18 July */
+
+    /* feb-stub, march, apr, may, jun */
+    expect(schedule.interests).to.be.an('array').of.length(5);
+
+    /* No principal repayments */
+    schedule.interests.forEach(function (v) {
+      expect(v.principal).to.equal(20000);
+    });
+
+    /* Initial stub interest 19 days */
+    expect(schedule.interests[0].amount).to.equal(253);
+    expect(schedule.interests[0].status).to.equal('paid');
+
+    /* Mar, Apr, May fully paid */
+    expect(schedule.interests[1].amount).to.equal(400);
+    expect(schedule.interests[1].status).to.equal('paid');
+    expect(schedule.interests[2].amount).to.equal(400);
+    expect(schedule.interests[2].status).to.equal('paid');
+    expect(schedule.interests[3].amount).to.equal(400);
+    expect(schedule.interests[3].status).to.equal('paid');
+
+    /* June partially paid */
+    expect(schedule.interests[4].amount).to.equal(400);
+    expect(schedule.interests[4].outstanding).to.equal(53);
+    expect(schedule.interests[4].status).to.equal('partial');
+
+    /* July accrual 17 days*/
+    expect(schedule.accrued.amount).to.equal(227);
+  });
 });

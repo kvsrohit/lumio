@@ -22,9 +22,12 @@
     "app-route": "PolymerElements/app-route#^2.1.1",
     "app-layout": "^2.1.1",
     "paper-toggle-button": "^2.1.1",
-    "paper-tabs": "^2.1.1"
+    "paper-tabs": "^2.1.1",
+    "oe-charts": "^1.5.0",
+    "paper-slider": "^2.0.7"
   },
   "resolutions": {
-    "webcomponentsjs": "^v1.1.0"
+    "webcomponentsjs": "^v1.1.0",
+    "paper-slider": "^2.0.7"
   }
 }

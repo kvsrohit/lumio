@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/paper-styles/color.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
 
 <link rel="import" href="../bower_components/oe-ui-forms/behaviors/oe-form-validation-behavior.html">
 <link rel="import" href="../behaviors/navigation-behavior.html">
@@ -38,15 +39,47 @@
         right: 1em;
       }
 
+      .full-width {
+        width: 100%;
+      }
+
+      label.secondary {
+        color: #737373;
+        font-size: 12px;
+      }
+
+      .padding {
+        padding-top: 20px;
+      }
     </style>
 
     <div class="layout vertical flex">
       <h4>Payment</h4>
-      <div class="fields">
+      <div class="fields layout vertical">
         <oe-decimal required min=1 label="Amount" field-id="amount" value={{vm.amount}}>
           <span prefix>&#8377;&nbsp;&nbsp;</span>
         </oe-decimal>
         <oe-date id="paymentDate" label="Date" max="today" field-id="paymentDate" value={{vm.paymentDate}}></oe-date>
+
+
+        <oe-decimal required min=0 label="Interest" field-id="interest" value={{vm.interest}}>
+          <span prefix>&#8377;&nbsp;&nbsp;</span>
+        </oe-decimal>
+        <oe-decimal required min=0 label="Principal" field-id="principal" value={{vm.principal}}>
+          <span prefix>&#8377;&nbsp;&nbsp;</span>
+        </oe-decimal>
+
+        <div class="padding">
+          <div class="layout horizontal">
+            <label class="secondary">Principal</label>
+            <span class="layout flex"></span>
+            <label class="secondary">Interest</label>
+          </div>
+          <paper-slider pin snaps disabled=[[!vm.amount]] class="full-width" step="10" value={{vm.principal}} secondary-progress=[[vm.amount]]
+            max=[[vm.amount]]></paper-slider>
+        </div>
+
+        <oe-textarea label="Comments" value=[[vm.comments]]></oe-textarea>
       </div>
       <div class="actions controls">
         <paper-button on-tap="cancel">Cancel</paper-button>
@@ -58,10 +91,13 @@
     Polymer({
       is: 'payment-form',
       behaviors: [OEUtils.FormValidationBehavior, Polymer.NavigationBehavior, Polymer.FormattingHelper, Polymer.AppNetworkStatusBehavior],
+      observers: [
+        '_vmChanged(vm.*)'
+      ],
       properties: {
         vm: {
           type: Object,
-          value:  function(){
+          value: function () {
             return this.emptyData();
           }
         }
@@ -70,7 +106,8 @@
         return {
           paymentDate: this.today(),
           amount: 0,
-          type: 'interest'
+          interest: 0,
+          principal: 0
         }
       },
       save: function () {
@@ -85,6 +122,15 @@
       cancel: function (detail) {
         this.set('vm', this.emptyData());
         this.fire('close');
+      },
+      _vmChanged: function (data) {
+        if (data.path === 'vm.principal') {
+          this.set('vm.interest', data.base.amount - data.value);
+        } else if (data.path === 'vm.interest') {
+          this.set('vm.principal', data.base.amount - data.value);
+        } else if (data.path === 'vm.amount') {
+          this.set('vm.interest', data.value - data.base.principal);
+        }
       }
     });
   </script>

@@ -8,7 +8,7 @@
   startDate: '2018-06-10T00:00:00.000Z',
   interestRate: 1.5,
   interestFrequency: 'Monthly/Annual'
-  interestDay: 1,
+  paymentDay: 1,
   leasePeriod: 5,  
   hasPenalty: true,
   penaltyType:'FixedPerDay/InterestOnInterest',
@@ -20,9 +20,10 @@
 ``` JSON
 {
   loanId: 'Loan Document ID',
-  amount: 250,
+  amount: 4250,
+  interest: 250,
+  principal: 4000,
   paymentDate: '2018-06-10T00:00:00.000Z',
-  type: 'Interest/Principal',
 }
 ```
 
