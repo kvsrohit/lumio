@@ -58,18 +58,16 @@
       } */
     </style>
 
+    <app-route id="router" route="{{route}}" pattern="/:loanType" data="{{routeData}}" tail="{{subRoute}}">
+    </app-route>
+
     <div class="layout vertical full-size">
-      <template is="dom-if" if=[[loans.length]]>
         <paper-listbox selected={{selectedItem}} attr-for-selected="item">
-          <template is="dom-repeat" items=[[loans]]>
+          <template is="dom-repeat" items="[[_getCandidates(routeData, loans)]]">
             <paper-item on-tap="_getAnalytics" focused={{item.focused}} item=[[item]]>
               <div class="layout flex loan-item">
                 <div class="layout flex horizontal">
-                  <div>
-                    <a href="/loan-form/[[item.$key]]">
-                      [[item.name]]
-                    </a>
-                  </div>
+                  <div>[[item.name]]</div>
                   <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
                   <div>[[formatTimeAgo(item.startDate)]]</div>
                 </div>
@@ -94,16 +92,6 @@
 
         <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
         </paper-fab>
-      </template>
-      <template is="dom-if" if=[[!loans.length]]>
-        <div class="layout flex"></div>
-        <div class="layout vertical center">
-          <label>Welcome!</label>
-          <label>You have not created any loans yet.</label>
-          <paper-button disabled=[[!online]] style="margin-top: 20px;" raised primary on-tap="newLoan">Create New</paper-button>
-        </div>
-        <div class="layout flex"></div>
-      </template>
     </div>
   </template>
   <script>
@@ -112,19 +100,26 @@
       behaviors: [Polymer.NavigationBehavior, Polymer.FormattingHelper, Polymer.AppNetworkStatusBehavior],
       properties: {
         loans: {
-          type: Array,
-          observer: '_lc'
+          type: Array
         },
         selectedItem: {
           type: Object,
           notify: true
+        },
+        loanType: {
+          type: String,
+          value: "LENDING"
         }
       },
-      _lc: function (nl, ol) {
-        console.log('Loan Changed ', ol, nl);
-      },
-      _open: function (i) {
-        return i ? true : false;
+      _getCandidates: function (routeData, loans) {
+        var candidates = [];
+        var self = this;
+        if(loans){
+          candidates = loans.filter(function(l) {
+            return l.type === routeData.loanType;
+          });
+        }
+        return candidates;
       },
       _getAnalytics: function(evt){
         this.set('schedule', Interest.getAnalytics(evt.model.item, this.today()));

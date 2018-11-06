@@ -42,6 +42,16 @@
         margin-bottom: 10px;
         padding: 10px 0px;
       }
+
+      .LENDING {
+        background-color: #9c27b0;
+        color: #f3e5f5;
+      }
+
+      .BORROWING {
+        background-color: coral;
+        color: #f3e5f5;
+      }
     </style>
     <firebase-document id="document" app-name="lumio" path="[[_dbDataPath(routeData)]]" data="{{dbData}}">
     </firebase-document>
@@ -51,8 +61,9 @@
 
     <div class="layout vertical flex fit">
       <div class="fields layout">
-        <paper-material class="section">
+        <paper-material class="section layout vertical">
 
+          <paper-button on-tap="_toggleType" class$="[[viewData.type]]">[[viewData.type]]</paper-button>
           <oe-input required label="Name" field-id="name" value={{viewData.name}}></oe-input>
           <oe-decimal required min=1 label="Amount" field-id="amount" value={{viewData.amount}}>
             <span prefix>&#8377;&nbsp;&nbsp;</span>
@@ -127,6 +138,7 @@
       },
       emptyData: function () {
         return {
+          type: 'LENDING',
           startDate: this.today(),
           interestFrequency: 'Monthly',
           paymentDay: 1,
@@ -137,6 +149,13 @@
           hasAmortization: false,
           amortFrequency: 'Monthly',
           amortAmount: 0
+        }
+      },
+      _toggleType: function(){
+        if(this.viewData.type === 'LENDING'){
+          this.set('viewData.type', 'BORROWING');
+        } else {
+          this.set('viewData.type', 'LENDING');          
         }
       },
       _penaltyIsFixed: function (penaltyType) {

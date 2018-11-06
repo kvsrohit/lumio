@@ -24,7 +24,8 @@
     "paper-toggle-button": "^2.1.1",
     "paper-tabs": "^2.1.1",
     "oe-charts": "^1.5.0",
-    "paper-slider": "^2.0.7"
+    "paper-slider": "^2.0.7",
+    "paper-badge": "2.1.0"
   },
   "resolutions": {
     "webcomponentsjs": "^v1.1.0",

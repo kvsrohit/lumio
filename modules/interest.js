@@ -101,7 +101,13 @@ function generateSchedule(loan, calcDate) {
   var periodInterest = getInterestForPeriod(outstandingPrincipal, loan.interestRate, 1);
   while (nextDate <= calcDate) {
 
-    while (principalFlows.length > 0 && principalFlows[0].date < _addDays(currentDate, loan.leasePeriod)) {
+    // if(principalFlows.length > 0){
+    //   console.log(principalFlows[0], principalFlows[0].date, _addDays(currentDate, loan.leasePeriod), principalFlows[0].date <= _addDays(currentDate, loan.leasePeriod));
+    // } else {
+    //   console.log('No principal flows');
+    // }
+    while (principalFlows.length > 0 && principalFlows[0].date <= _addDays(currentDate, loan.leasePeriod)) {
+      //console.log('Reducing 1 ', principalFlows[0].amount , ' from ', outstandingPrincipal);
       outstandingPrincipal -= principalFlows[0].amount;
       principalFlows.shift();
       periodInterest = getInterestForPeriod(outstandingPrincipal, loan.interestRate, 1);
@@ -116,8 +122,11 @@ function generateSchedule(loan, calcDate) {
     nextDate = _getNextInterestDate(loan, nextDate);
   }
 
+  //console.log('Num Principal Flows ', principalFlows.length);
   /* Reduce principal with any outstanding unaccounted principal payments */
-  while (principalFlows.length > 0 && principalFlows[0].date < _addDays(currentDate, loan.leasePeriod)) {
+  while (principalFlows.length > 0 && principalFlows[0].date <= _addDays(currentDate, loan.leasePeriod)) {
+    //console.log('Reducing 2 ', principalFlows[0].amount , ' from ', outstandingPrincipal);
+
     outstandingPrincipal -= principalFlows[0].amount;
     principalFlows.shift();
   }
@@ -153,9 +162,10 @@ function generateSchedule(loan, calcDate) {
 
 function _prepareFlows(flows, type) {
   flows = flows || [];
+  //console.log('Preparing ', type, ' from ', flows);
   flows.forEach(function (v) {
-    if (typeof v.date === 'string') {
-      v.date = new Date(v.date);
+    if (typeof v.paymentDate === 'string') {
+      v.paymentDate = new Date(v.paymentDate);
     }
   });
   
@@ -163,18 +173,20 @@ function _prepareFlows(flows, type) {
     return v[type];
   })
     .map(function(v){
-      return {amount: v[type], date: v.date};
+      return {amount: v[type], date: v.paymentDate};
     })
     .sort(function (a, b) {
-      return a.date > b.date;
+      return a.date > b.date? 1: (a.date < b.date ? -1 : 0) ;
     });
 }
 
 function _matchScheduleWithPayments(flows, payments) {
+  //console.log('Incoming payments ', JSON.stringify(payments, null, 2));
   var overPayment = 0; /* Residue from previous additional payment */
   var overduePayment = 0;
   flows.forEach(function (item) {
     var outstanding = item.amount - overPayment;
+    //console.log('Flow Item is ', item, overPayment, outstanding);
 
     if (outstanding > 0) {
       overPayment = 0;
@@ -200,8 +212,12 @@ function _matchScheduleWithPayments(flows, payments) {
     }
     overduePayment += item.outstanding;
   });
-
-  return {overdue: overduePayment, overPayment: overPayment};
+  overduePayment -= overPayment;
+  /* Apply any extra remaining payments to overdue */
+  payments.forEach(function(payment){
+    overduePayment -= payment.amount;
+  });
+  return {overdue: overduePayment};
 }
 
 function getAnalytics(loan, calcDate) {
@@ -216,23 +232,26 @@ function getAnalytics(loan, calcDate) {
   /* Prepare the value-date data-type and sorted interest flows */
   var interestPayments = _prepareFlows(loan.payments, 'interest');
   var result = _matchScheduleWithPayments(schedule.interests, interestPayments);
-  
   schedule.overdueInterest = result.overdue;
-  schedule.overPayment = result.overPayment;
+  //schedule.overPayment = result.overPayment;
 
   /* Prepare the value-date data-type and sorted interest flows */
   var principalPayments = _prepareFlows(loan.payments, 'principal');
   result = _matchScheduleWithPayments(schedule.principals, principalPayments);
   
-  schedule.overduePrincipal = result.overdue;
-  schedule.overPayment += result.overPayment;
+  if(loan.hasAmortization){
+    schedule.overduePrincipal = result.overdue;
+  } else {
+    schedule.overduePrincipal = 0;
+  }
+  //schedule.overPayment += result.overPayment;
 
   if (loan.payments && loan.payments.length > 0) {
     schedule.lastPayment = loan.payments.sort(function (a, b) {
       return a.date < b.date;
     })[0];
   }
-  schedule.outstandingAmount = schedule.outstandingPrincipal + schedule.overdueInterest + schedule.accrued.amount - schedule.overPayment;
+  schedule.outstandingAmount = schedule.outstandingPrincipal + schedule.overdueInterest + schedule.accrued.amount /*- schedule.overPayment*/;
   return schedule;
 }
 

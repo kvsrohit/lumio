@@ -8,6 +8,7 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
 
 <link rel="import" href="../behaviors/navigation-behavior.html">
 <link rel="import" href="../behaviors/formatting-helper.html">
@@ -51,13 +52,26 @@
       .light {
         color: var(--secondary-text-color);
       }
+
       .aux {
         color: var(--secondary-text-color);
         font-size: 10;
       }
+
       .status-icon {
         padding-left: 5px;
       }
+
+      .LENDING {
+        background-color: #9c27b0;
+        color: #f3e5f5;
+      }
+
+      .BORROWING {
+        background-color: coral;
+        color: #f3e5f5;
+      }
+      
       /* .label-details {
         @apply --layout-vertical;
       }
@@ -77,15 +91,14 @@
 
 
     <div class="layout vertical flex">
-      <div class="layout horizontal flex">
+      <div class$="layout horizontal flex [[viewData.type]]">
         <h3>
           <iron-icon icon="arrow-back" on-tap="goBack"></iron-icon>
         </h3>
         <h3 class="flex">{{viewData.name}}</h3>
         <h3>[[formatAmount(viewData.amount)]]</h3>
       </div>
-
-
+      <h3 class="layout center">[[viewData.type]]</h3>
       <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{subRoute.path}} attr-for-selected="path">
         <payment-form path="/payment" on-save="savePayment" on-close="closePaymentForm"></payment-form>
         <div path="">
@@ -150,28 +163,32 @@
               </div>
             </div>
             <div class="layout vertical">
-              <template is="dom-repeat" sort="sortItems" items=[[schedule.interests]]>
+              <template is="dom-repeat" sort="sortItems" items=[[schedule.flows]]>
+
+
+
+
                 <paper-item focused={{item.focused}}>
                   <label class="layout flex">[[formatDate(item.date)]]</label>
 
                   <template is="dom-if" if="[[_showOutstanding(item)]]">
-                      <label class="aux">[[formatAmount(item.outstanding)]]/</label>                    
+                    <label class="aux">[[formatAmount(item.outstanding)]]/</label>
                   </template>
                   <label>[[formatAmount(item.amount)]]</label>
                   <iron-icon class="status-icon" icon=[[_paymentStatus(item.status)]]></iron-icon>
-
-                  <template is="dom-if" if=[[item.focused]]>
-                    
-                  </template>
-
                 </paper-item>
               </template>
             </div>
             <div class="layout vertical">
               <template is="dom-repeat" sort="sortItems" items=[[viewData.payments]]>
                 <paper-item on-hold="_onEditPayment">
-                  <label class="layout flex">[[formatDate(item.paymentDate)]]</label>
-                  <label>[[formatAmount(item.amount)]]</label>
+                  <paper-item-body two-line>
+                    <div class="layout horizontal">
+                      <label class="layout flex">[[formatDate(item.paymentDate)]]</label>
+                      <label>[[formatAmount(item.amount)]]</label>
+                    </div>
+                    <div secondary>Principal [[formatAmount(item.principal)]] / Interest [[formatAmount(item.interest)]]</div>
+                  </paper-item-body>
                 </paper-item>
               </template>
               <paper-fab class="actions" icon="payment" on-tap="_onNewPayment" disabled="[[!online]]" aria-label="Add Payment">
@@ -186,7 +203,7 @@
     Polymer({
       is: 'loan-details',
       behaviors: [Polymer.FormattingHelper, Polymer.NavigationBehavior, Polymer.AppNetworkStatusBehavior],
-      observers:[
+      observers: [
         '_dbDataChanged(dbData.*)'
       ],
       properties: {
@@ -213,7 +230,7 @@
         return {}
       },
       sortItems: function (a, b) {
-        return a.date < b.date;
+        return a.date > b.date ? -1 : (a.date < b.date ? 1 : 0);
       },
       _paymentStatus: function (status) {
         switch (status) {
@@ -232,7 +249,7 @@
             }
         }
       },
-      _showOutstanding: function(item){
+      _showOutstanding: function (item) {
         return item.outstanding !== 0 && item.outstanding !== item.amount;
       },
       _getPenaltyText: function (loan) {
@@ -254,7 +271,9 @@
         /* Set on the view */
         if (this.$.document.path) {
           this.set('viewData', JSON.parse(JSON.stringify(dbData)));
-          this.set('schedule', Interest.getAnalytics(this.viewData, this.today()));
+          var schedule = Interest.getAnalytics(this.viewData, this.today());
+          schedule.flows = schedule.interests.concat(schedule.principals);
+          this.set('schedule', schedule);
         } else {
           this.set('viewData', this.emptyData());
           this.set('schedule', {});

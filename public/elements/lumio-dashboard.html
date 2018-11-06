@@ -1,0 +1,246 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../behaviors/navigation-behavior.html">
+<link rel="import" href="../behaviors/formatting-helper.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-badge/paper-badge.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<dom-module id="lumio-dashboard">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .bottom {
+        position: absolute;
+        bottom: 0px;
+      }
+
+      .controls {
+        display: block;
+        position: relative;
+        margin: 10px auto;
+        width: calc(100vw - 20px);
+        max-width: 480px;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        justify-content: space-between;
+        transition: opacity 0.3s;
+        opacity: 1;
+      }
+
+      .actions {
+        position: fixed;
+        bottom: 1em;
+        right: 1em;
+      }
+
+      paper-card {
+        margin-bottom: 10px;
+        --paper-card-header: {
+          border-bottom: 1px solid var(--paper-teal-100);
+        }
+      }
+
+      /* paper-card.lime {
+        --paper-card-background-color: var(--google-yellow-300);
+        --paper-card-header-color: white;
+      }
+
+      paper-card.cyan {
+        --paper-card-background-color: var(--paper-indigo-300);
+        --paper-card-header-color: white;
+      }
+ */
+
+      /* paper-card {
+        --paper-card-content: {
+          color: white;
+        };
+      } */
+
+      .header {
+        /* color: white; */
+        font-size: 24px;
+      }
+
+      .full-size {
+        height: 100%;
+        width: 100%;
+      }
+
+      paper-fab {
+        align-self: flex-end;
+      }
+    </style>
+    <!-- <firebase-document id="document" app-name="lumio" path="[[_dbDataPath(routeData)]]" data="{{dbData}}">
+    </firebase-document>
+
+    <app-route id="router" route="{{route}}" pattern="/:loanId" data="{{routeData}}" tail="{{subRoute}}">
+    </app-route> -->
+
+
+    <template is="dom-if" if=[[loans.length]]>
+
+      <div class="full-size layout vertical flex">
+
+        <paper-card class="lime">
+          <div class="card-content header layout horizontal flex">
+            <label class="layout flex">Net Worth</label>
+            <label>[[formatAmount(viewData.netWorth)]]</label>
+          </div>
+          <!-- <div class="card-actions">
+          <paper-button>Share</paper-button>
+            <paper-icon-button icon="editor:format-list-bulleted"></paper-icon-button>
+        </div> -->
+
+        </paper-card>
+
+
+        <paper-card class="cyan" heading="Lendings">
+          <div class="header card-content layout horizontal">
+            <oe-info class="flex" label="Current Value" value=[[formatAmount(viewData.lendingsCurrentValue)]]></oe-info>
+            <oe-info class="flex" label="Overdue" value=[[formatAmount(viewData.lendingsOverdue)]]></oe-info>
+            <oe-info class="flex" label="Principal" value=[[formatAmount(viewData.lendingsOutstanding)]]></oe-info>
+          </div>
+          <div class="card-actions layout horizontal">
+            <paper-button class="flex" data-type="LENDING" on-tap="_showList">
+              <iron-icon id="LENDING" icon="toc"></iron-icon>
+              <paper-badge for="LENDING" label=[[viewData.lendings.length]]></paper-badge>
+            </paper-button>
+
+            <paper-button class="flex" data-type="LENDING" data-period="today" on-tap="_showProjections">
+              <iron-icon icon="today"></iron-icon>
+            </paper-button>
+
+            <paper-button class="flex" data-type="LENDING" data-period="week" on-tap="_showProjections">
+              <iron-icon icon="event"></iron-icon>
+            </paper-button>
+
+            <paper-button class="flex" data-type="LENDING" data-period="month" on-tap="_showProjections">
+              <iron-icon icon="assessment"></iron-icon>
+            </paper-button>
+
+          </div>
+        </paper-card>
+
+        <paper-card class="lime" heading="Borrowings">
+          <div class="header card-content layout horizontal">
+            <oe-info class="flex" label="Current Value" value=[[formatAmount(viewData.borrowingsCurrentValue)]]></oe-info>
+            <oe-info class="flex" label="Overdue" value=[[formatAmount(viewData.borrowingsOverdue)]]></oe-info>
+            <oe-info class="flex" label="Principal" value=[[formatAmount(viewData.borrowingsOutstanding)]]></oe-info>
+          </div>
+
+          <div class="card-actions layout horizontal">
+              <paper-button class="flex" data-type="BORROWING" on-tap="_showList">
+                <iron-icon id="BORROWING" icon="toc"></iron-icon>
+                <paper-badge for="BORROWING" label=[[viewData.lendings.length]]></paper-badge>
+              </paper-button>
+  
+              <paper-button class="flex" data-type="BORROWING" data-period="today" on-tap="_showProjections">
+                <iron-icon icon="today"></iron-icon>
+              </paper-button>
+  
+              <paper-button class="flex" data-type="BORROWING" data-period="week" on-tap="_showProjections">
+                <iron-icon icon="event"></iron-icon>
+              </paper-button>
+  
+              <paper-button class="flex" data-type="BORROWING" data-period="month" on-tap="_showProjections">
+                <iron-icon icon="assessment"></iron-icon>
+              </paper-button>
+  
+            </div>
+
+            
+        </paper-card>
+        <div class="flex"></div>
+        <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="New Loan">
+        </paper-fab>
+
+      </div>
+
+    </template>
+
+    <template is="dom-if" if=[[!loans.length]]>
+      <div class="layout flex"></div>
+      <div class="layout vertical center">
+        <label>Welcome!</label>
+        <label>You have not created any loans yet.</label>
+        <paper-button disabled=[[!online]] style="margin-top: 20px;" raised primary on-tap="newLoan">Create New</paper-button>
+      </div>
+      <div class="layout flex"></div>
+    </template>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'lumio-dashboard',
+      behaviors: [Polymer.FormattingHelper, Polymer.NavigationBehavior, Polymer.AppNetworkStatusBehavior],
+      observers: [
+        '_loansChanged(loans.*)'
+      ],
+      properties: {
+        loans: {
+          type: Object
+        },
+        viewData: {
+          type: Object
+        }
+      },
+
+      newLoan: function () {
+        this.navigate('/loan-form');
+      },
+      _showList: function (evt) {
+        this.navigate('/loan-list/' + evt.currentTarget.dataset.type);
+      },
+      _showProjections: function(evt){
+        this.navigate('/projections/' + evt.currentTarget.dataset.type + '/' + evt.currentTarget.dataset.period);
+      },
+      _loansChanged: function (changes) {
+        var viewData = {
+          lendingsTotal: 0,
+          lendingsOverdue: 0,
+          lendingsOutstanding: 0,
+          lendingsCurrentValue: 0,
+          borrowingsTotal: 0,
+          borrowingsOverdue: 0,
+          borrowingsOutstanding: 0,
+          borrowingsCurrentValue: 0,
+          lendings: [],
+          borrowings: [],
+        };
+        var self = this;
+
+        if (this.loans) {
+          var loansClone = JSON.parse(JSON.stringify(this.loans));
+          loansClone.forEach(function (loan) {
+            var schedule = Interest.getAnalytics(loan, self.today());
+            schedule.type = loan.type;
+            //viewData.all.push(schedule);
+            if (loan.type === 'LENDING') {
+              viewData.lendings.push(schedule);
+              viewData.lendingsTotal += loan.amount;
+              viewData.lendingsOutstanding += schedule.outstandingPrincipal;
+              viewData.lendingsCurrentValue += schedule.outstandingAmount;
+              viewData.lendingsOverdue += (schedule.overdueInterest + schedule.overduePrincipal);
+            } else {
+              viewData.borrowings.push(schedule);
+              viewData.borrowingsTotal += loan.amount;
+              viewData.borrowingsOutstanding += schedule.outstandingPrincipal;
+              viewData.borrowingsCurrentValue += schedule.outstandingAmount;
+              viewData.borrowingsOverdue += (schedule.overdueInterest + schedule.overduePrincipal);
+            }
+          });
+        }
+        console.log(loansClone);
+        viewData.netWorth = viewData.lendingsCurrentValue - viewData.borrowingsCurrentValue;
+        this.set('viewData', viewData);
+      }
+
+    });
+  </script>
+</dom-module>

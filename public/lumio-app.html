@@ -10,9 +10,11 @@
 
 <link rel="import" href="note-app-elements/na-elements.html">
 
+<link rel="import" href="elements/lumio-dashboard.html">
 <link rel="import" href="elements/loan-list.html">
 <link rel="import" href="elements/loan-form.html">
 <link rel="import" href="elements/loan-details.html">
+<link rel="import" href="elements/loan-projections.html">
 <link rel="import" href="behaviors/navigation-behavior.html">
 
 
@@ -66,9 +68,11 @@
             </app-header>
             <div class="app-area layout flex">
                 <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{routeData.page}} attr-for-selected="path">
-                    <loan-list path="" loans=[[persistedLumios]] selected-item="{{editableNote}}"></loan-list>
+                    <lumio-dashboard path="" loans=[[persistedLumios]]></lumio-dashboard>
+                    <loan-list path="loan-list" base-path=[[basePath(user)]] route={{subRoute}} loans=[[persistedLumios]] selected-item="{{editableNote}}"></loan-list>
                     <loan-form path="loan-form" base-path=[[basePath(user)]] route={{subRoute}}></loan-form>
                     <loan-details path="details" base-path=[[basePath(user)]] route={{subRoute}}></loan-details>
+                    <loan-projections path="projections" base-path=[[basePath(user)]] route={{subRoute}} loans=[[persistedLumios]]></loan-projections>
                 </neon-animated-pages>
             </div>
         </app-header-layout>

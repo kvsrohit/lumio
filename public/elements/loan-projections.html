@@ -1,0 +1,109 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../behaviors/navigation-behavior.html">
+<link rel="import" href="../behaviors/formatting-helper.html">
+
+<dom-module id="loan-projections">
+  <template>
+
+    <style include="iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+      }
+
+      .full-size {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <app-route id="router" route="{{route}}" pattern="/:loanType/:period" data="{{routeData}}" tail="{{subRoute}}">
+    </app-route>
+
+    <div class="layout vertical full-size">
+      <paper-listbox selected={{selectedItem}} attr-for-selected="item">
+        <template is="dom-repeat" items="[[_getSchedules(routeData, loans)]]">
+          <paper-item on-tap="_getAnalytics" focused={{item.focused}} item=[[item]]>
+            <div class="layout flex loan-item">
+              <div class="layout flex horizontal">
+                <div>
+                  <a href="/loan-form/[[item.$key]]">
+                    [[item.name]]
+                  </a>
+                </div>
+                <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
+                <div>[[formatTimeAgo(item.startDate)]]</div>
+              </div>
+              <!-- <div class="actions layout flex vertical"> -->
+              <paper-card class="actions">
+                <div class="card-content layout horizontal wrap">
+                  <oe-info on-tap="_makePayment" class="flex" label="Interest Outstanding" value=[[formatAmount(schedule.overdueInterest)]]></oe-info>
+                  <oe-info on-tap="_settleLoan" class="flex" label="Total Outstanding" value=[[formatAmount(schedule.outstandingAmount)]]></oe-info>
+                </div>
+                <div class="card-actions layout horizontal">
+                  <paper-button on-tap="viewDetails">More...</paper-button>
+                  <div class="flex"></div>
+                  <paper-icon-button icon="create" on-tap="edit"></paper-icon-button>
+                </div>
+              </paper-card>
+              <!-- </div> -->
+            </div>
+
+          </paper-item>
+        </template>
+      </paper-listbox>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'loan-projections',
+      behaviors: [Polymer.NavigationBehavior, Polymer.FormattingHelper, Polymer.AppNetworkStatusBehavior],
+      properties: {
+        loans: {
+          type: Array
+        },
+        selectedItem: {
+          type: Object,
+          notify: true
+        }
+      },
+      _getDateForPeriod: function (period) {
+        var dt = this.today();
+        if (period === 'week') {
+          dt = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate() + 7));
+        } else if (period === 'month') {
+          dt = new Date(Date.UTC(dt.getFullYear(), dt.getMonth() + 1, 0));
+        }
+        return dt;
+      },
+      _getSchedules: function (routeData, loans) {
+        var schedules = [];
+        var self = this;
+        var valueDate = self._getDateForPeriod(routeData.period);
+        if (loans) {
+          schedules = loans.filter(function (l) {
+            return l.type === routeData.loanType;
+          }).map(function (l) {
+            return Interest.getAnalytics(l, valueDate);
+          });
+        }
+        return schedules;
+      },
+      _makePayment: function (evt) {
+        this.navigate('/details/' + evt.model.item.$key + '/payment');
+      },
+      viewDetails: function (e) {
+        this.navigate('/details/' + e.model.item.$key);
+      },
+      edit: function (e) {
+        this.navigate('/loan-form/' + e.model.item.$key);
+      }
+    })
+  </script>
+</dom-module>
