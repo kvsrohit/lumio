@@ -252,6 +252,8 @@ function getAnalytics(loan, calcDate) {
     })[0];
   }
   schedule.outstandingAmount = schedule.outstandingPrincipal + schedule.overdueInterest + schedule.accrued.amount /*- schedule.overPayment*/;
+  schedule.name = loan.name;
+  schedule.$key = loan.$key;
   return schedule;
 }
 

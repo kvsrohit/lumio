@@ -71,7 +71,7 @@
         background-color: coral;
         color: #f3e5f5;
       }
-      
+
       /* .label-details {
         @apply --layout-vertical;
       }
@@ -86,7 +86,7 @@
     <firebase-document id="document" app-name="lumio" path="[[_dbDataPath(routeData)]]" data="{{dbData}}">
     </firebase-document>
 
-    <app-route id="router" route="{{route}}" pattern="/:loanId" data="{{routeData}}" tail="{{subRoute}}">
+    <app-route id="router" route="{{route}}" pattern="/:loanId/:action" data="{{routeData}}" tail="{{subRoute}}">
     </app-route>
 
 
@@ -99,9 +99,9 @@
         <h3>[[formatAmount(viewData.amount)]]</h3>
       </div>
       <h3 class="layout center">[[viewData.type]]</h3>
-      <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{subRoute.path}} attr-for-selected="path">
-        <payment-form path="/payment" on-save="savePayment" on-close="closePaymentForm"></payment-form>
-        <div path="">
+      <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{routeData.action}} attr-for-selected="path">
+        <payment-form path="payment" on-save="savePayment" on-close="closePaymentForm" route={{subRoute}}></payment-form>
+        <div path="view">
           <paper-tabs selected={{selectedTab}}>
             <paper-tab>Details</paper-tab>
             <paper-tab>Interests</paper-tab>
@@ -308,10 +308,14 @@
         });
       },
       _onNewPayment: function () {
-        this.set('subRoute.path', '/payment');
+        var state = {
+          interest: this.schedule && this.schedule.overdueInterest > 0 ? this.schedule.overdueInterest : 0,
+          principal: this.schedule && this.schedule.overduePrincipal > 0 ? this.schedule.overduePrincipal : 0
+        };
+        this.navigate('/details/' + this.routeData.loanId + '/payment/' + state.interest + '/' + state.principal);
       },
       closePaymentForm: function (e) {
-        this.set('subRoute.path', '');
+        window.history.back();
       },
       savePayment: function (e) {
         var payment = e.detail;
@@ -338,7 +342,8 @@
         /* Revalue once a payment has been added/modified */
         this.set('schedule', Interest.getAnalytics(this.viewData, this.today()));
 
-        this.set('subRoute.path', '');
+        window.history.back();
+        //this.set('subRoute.path', '');
       },
       save: function () {
         var self = this;

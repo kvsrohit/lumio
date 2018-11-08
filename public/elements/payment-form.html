@@ -53,6 +53,9 @@
       }
     </style>
 
+    <app-route id="router" route="{{route}}" pattern="/:interest/:principal" data="{{routeData}}" tail="{{subRoute}}">
+    </app-route>
+
     <div class="layout vertical flex">
       <h4>Payment</h4>
       <div class="fields layout vertical">
@@ -95,6 +98,10 @@
         '_vmChanged(vm.*)'
       ],
       properties: {
+        routeData:{
+          type: Object,
+          observer: '_routeDataChanged'
+        },
         vm: {
           type: Object,
           value: function () {
@@ -122,6 +129,14 @@
       cancel: function (detail) {
         this.set('vm', this.emptyData());
         this.fire('close');
+      },
+      _routeDataChanged: function(value){
+        if(value){
+          value.interest = value.interest ? parseFloat(value.interest) : 0;
+          value.principal = value.principal ? parseFloat(value.principal) : 0;
+          this.set('vm.amount', value.interest + value.principal);
+          this.set('vm.interest', value.interest);
+        }
       },
       _vmChanged: function (data) {
         if (data.path === 'vm.principal') {

@@ -164,6 +164,7 @@
       _dbDataChanged: function (dbData) {
         /* Set on the view */
         if (this.$.document.path) {
+          console.log('Setting ViewData as ', this.$.document.path, dbData);
           this.set('viewData', JSON.parse(JSON.stringify(dbData)));
         } else {
           this.set('viewData', this.emptyData());

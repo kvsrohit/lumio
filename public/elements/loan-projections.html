@@ -21,43 +21,54 @@
         height: 100%;
         width: 100%;
       }
+
+      paper-card {
+        margin-bottom: 10px;
+        --paper-card-header: {
+          border-bottom: 1px solid var(--paper-teal-100);
+        }
+      }
     </style>
+
+    <firebase-document id="document" app-name="lumio">
+    </firebase-document>
 
     <app-route id="router" route="{{route}}" pattern="/:loanType/:period" data="{{routeData}}" tail="{{subRoute}}">
     </app-route>
 
     <div class="layout vertical full-size">
-      <paper-listbox selected={{selectedItem}} attr-for-selected="item">
-        <template is="dom-repeat" items="[[_getSchedules(routeData, loans)]]">
-          <paper-item on-tap="_getAnalytics" focused={{item.focused}} item=[[item]]>
-            <div class="layout flex loan-item">
-              <div class="layout flex horizontal">
-                <div>
-                  <a href="/loan-form/[[item.$key]]">
-                    [[item.name]]
-                  </a>
-                </div>
-                <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
-                <div>[[formatTimeAgo(item.startDate)]]</div>
-              </div>
-              <!-- <div class="actions layout flex vertical"> -->
-              <paper-card class="actions">
-                <div class="card-content layout horizontal wrap">
-                  <oe-info on-tap="_makePayment" class="flex" label="Interest Outstanding" value=[[formatAmount(schedule.overdueInterest)]]></oe-info>
-                  <oe-info on-tap="_settleLoan" class="flex" label="Total Outstanding" value=[[formatAmount(schedule.outstandingAmount)]]></oe-info>
-                </div>
-                <div class="card-actions layout horizontal">
-                  <paper-button on-tap="viewDetails">More...</paper-button>
-                  <div class="flex"></div>
-                  <paper-icon-button icon="create" on-tap="edit"></paper-icon-button>
-                </div>
-              </paper-card>
-              <!-- </div> -->
-            </div>
+      <template is="dom-if" if=[[schedules.length]]>
+        <div class="layout vertical">
+          <h3 class="layout horizontal">Payments Due - [[formatDate(valueDate)]]</h3>
+        </div>
+      </template>
+      <template is="dom-repeat" items="[[schedules]]">
+        <paper-card class="cyan" heading="[[item.name]]">
+          <div class="header card-content layout horizontal">
+            <oe-info class="flex" label="Overdue Interest" value=[[formatAmount(item.overdueInterest)]]></oe-info>
+            <oe-info class="flex" label="Overdue Principal" value=[[formatAmount(item.overduePrincipal)]]></oe-info>
+          </div>
+          <div class="card-actions layout horizontal">
+            <div class="flex"></div>
+            <paper-button on-tap="_showPaymentForm">
+              <iron-icon icon="add-circle"></iron-icon>
+            </paper-button>
 
-          </paper-item>
-        </template>
-      </paper-listbox>
+            <paper-button on-tap="_addPaymentAuto">
+              <iron-icon icon="done-all"></iron-icon>
+            </paper-button>
+
+          </div>
+        </paper-card>
+
+      </template>
+      <template is="dom-if" if=[[!schedules.length]]>
+        <div class="flex"></div>
+
+        <div class="flex layout horizontal center-justified">No payments due as of [[formatDate(valueDate)]]</div>
+
+        <div class="flex"></div>
+      </template>
     </div>
   </template>
   <script>
@@ -67,12 +78,11 @@
       properties: {
         loans: {
           type: Array
-        },
-        selectedItem: {
-          type: Object,
-          notify: true
         }
       },
+      observers: [
+        '_generateSchedule(routeData, loans)'
+      ],
       _getDateForPeriod: function (period) {
         var dt = this.today();
         if (period === 'week') {
@@ -82,7 +92,7 @@
         }
         return dt;
       },
-      _getSchedules: function (routeData, loans) {
+      _generateSchedule: function (routeData, loans) {
         var schedules = [];
         var self = this;
         var valueDate = self._getDateForPeriod(routeData.period);
@@ -91,15 +101,50 @@
             return l.type === routeData.loanType;
           }).map(function (l) {
             return Interest.getAnalytics(l, valueDate);
+          }).filter(function (s) {
+            return (s.overduePrincipal > 0 || s.overdueInterest > 0);
           });
         }
-        return schedules;
+        self.set('valueDate', valueDate);
+        self.set('schedules', schedules);
       },
-      _makePayment: function (evt) {
-        this.navigate('/details/' + evt.model.item.$key + '/payment');
+      _showPaymentForm: function (evt) {
+        var state = {
+          interest: evt.model.item.overdueInterest,
+          principal: evt.model.item.overduePrincipal
+        };
+
+        this.navigate('/details/' + evt.model.item.$key + '/payment/' + state.interest + '/' + state.principal);
+      },
+      _addPaymentAuto: function (evt) {
+
+        var self = this;
+        var payment = {
+          interest: evt.model.item.overdueInterest,
+          principal: evt.model.item.overduePrincipal
+        };
+        payment.amount = payment.interest + payment.principal;
+        payment.paymentDate = this.today();
+        payment.key = this.quickGuid();
+
+        var loanUrl = this.basePath + '/' + evt.model.item.$key;
+        var promise = this.$.document.getStoredValue(loanUrl);
+        promise.then(function (loan) {
+          loan.payments = loan.payments || [];
+          loan.payments.push(payment);
+
+          var savePromise = self.$.document.setStoredValue(loanUrl, loan);
+          savePromise.then(function (data) {
+              self.fire('oe-show-success', 'Payment saved successfully');
+            })
+            .catch(function (e) {
+              self.fire('oe-show-error', 'Error: ' + e.message);
+            });
+
+        });
       },
       viewDetails: function (e) {
-        this.navigate('/details/' + e.model.item.$key);
+        this.navigate('/details/' + e.model.item.$key + '/view');
       },
       edit: function (e) {
         this.navigate('/loan-form/' + e.model.item.$key);
