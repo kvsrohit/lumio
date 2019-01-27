@@ -21,6 +21,8 @@
     "chai": "^4.1.2",
     "chai-things": "^0.2.0",
     "mocha": "^5.2.0",
+    "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0",
     "timeago.js": "^3.0.2",
     "vulcanize": "^1.16.0",
     "webpack": "^4.12.0",

@@ -69,7 +69,7 @@
             <div class="app-area layout flex">
                 <neon-animated-pages fallback-selection="" class="layout flex full-size" selected={{routeData.page}} attr-for-selected="path">
                     <lumio-dashboard path="" loans=[[persistedLumios]]></lumio-dashboard>
-                    <loan-list path="loan-list" base-path=[[basePath(user)]] route={{subRoute}} loans=[[persistedLumios]] selected-item="{{editableNote}}"></loan-list>
+                    <loan-list path="loan-list" base-path=[[basePath(user)]] route={{subRoute}} loans=[[persistedLumios]]></loan-list>
                     <loan-form path="loan-form" base-path=[[basePath(user)]] route={{subRoute}}></loan-form>
                     <loan-details path="details" base-path=[[basePath(user)]] route={{subRoute}}></loan-details>
                     <loan-projections path="projections" base-path=[[basePath(user)]] route={{subRoute}} loans=[[persistedLumios]]></loan-projections>

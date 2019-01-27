@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../behaviors/navigation-behavior.html">
 <link rel="import" href="../behaviors/formatting-helper.html">
 
@@ -28,33 +29,25 @@
         right: 1em;
       }
 
-      .loan-item {
+      .loan-item > div {
         padding-bottom: 5px;
         /* border-bottom: 1px solid var(--light-primary-color); */
       }
 
+      paper-card {
+        margin-bottom: 10px;
+      }
       paper-card .card-actions {
         padding: 0px;
       }
-      paper-item .actions {
+
+      /* paper-item .actions {
         display: none;
         font-weight: 400;
       }
 
       paper-item.iron-selected .actions {
         display: inline;
-        /* animation-duration: 3s;
-        animation-name: slidedown; */
-      }
-
-      /* @keyframes slidedown {
-        from {
-          margin-top: 500px;
-        }
-
-        to {
-          margin-top: 5px;
-        }
       } */
     </style>
 
@@ -62,36 +55,30 @@
     </app-route>
 
     <div class="layout vertical full-size">
-        <paper-listbox selected={{selectedItem}} attr-for-selected="item">
-          <template is="dom-repeat" items="[[_getCandidates(routeData, loans)]]">
-            <paper-item on-tap="_getAnalytics" focused={{item.focused}} item=[[item]]>
-              <div class="layout flex loan-item">
-                <div class="layout flex horizontal">
-                  <div>[[item.name]]</div>
-                  <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
-                  <div>[[formatTimeAgo(item.startDate)]]</div>
-                </div>
-                <!-- <div class="actions layout flex vertical"> -->
-                  <paper-card class="actions">
-                  <div class="card-content layout horizontal wrap">
-                      <oe-info on-tap="_makePayment" class="flex" label="Interest Outstanding" value=[[formatAmount(schedule.overdueInterest)]]></oe-info>
-                      <oe-info on-tap="_settleLoan" class="flex" label="Total Outstanding" value=[[formatAmount(schedule.outstandingAmount)]]></oe-info>
-                  </div>
-                  <div class="card-actions layout horizontal">
-                      <paper-button on-tap="viewDetails">More...</paper-button>
-                      <div class="flex"></div>
-                      <paper-icon-button icon="create" on-tap="edit"></paper-icon-button>
-                  </div>
-                </paper-card>
-                <!-- </div> -->
-              </div>
+      <template is="dom-repeat" items="[[_getCandidates(routeData, loans)]]">
+        <paper-card on-tap="_getAnalytics" focused={{item.focused}} item=[[item]]>
+          <div class="card-content layout flex loan-item">
+            <div class="layout flex horizontal ">
+              <div>[[item.name]]</div>
+              <div class="flex layout horizontal center-justified">[[formatAmount(item.amount)]]</div>
+              <div>[[formatTimeAgo(item.startDate)]]</div>
+            </div>
+            <div class="layout horizontal wrap">
+              <oe-info on-tap="_makePayment" class="flex" label="Interest Outstanding" value=[[formatAmount(item.schedule.overdueInterest)]]></oe-info>
+              <oe-info on-tap="_settleLoan" class="flex" label="Total Outstanding" value=[[formatAmount(item.schedule.outstandingAmount)]]></oe-info>
+            </div>
+          </div>
+          <div class="card-actions layout horizontal">
+            <div class="flex"></div>
+            <paper-icon-button icon="visibility" on-tap="viewDetails"></paper-icon-button>
+            <paper-icon-button icon="create" on-tap="edit"></paper-icon-button>
+          </div>
 
-            </paper-item>
-          </template>
-        </paper-listbox>
+        </paper-card>
+      </template>
 
-        <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
-        </paper-fab>
+      <paper-fab icon="add" on-tap="newLoan" disabled="[[!online]]" aria-label="Add note">
+      </paper-fab>
     </div>
   </template>
   <script>
@@ -114,18 +101,21 @@
       _getCandidates: function (routeData, loans) {
         var candidates = [];
         var self = this;
-        if(loans){
-          candidates = loans.filter(function(l) {
+        if (loans) {
+          candidates = loans.filter(function (l) {
             return l.type === routeData.loanType;
+          }).map(function (l) {
+            l.schedule = Interest.getAnalytics(l, self.today());
+            return l;
           });
         }
         return candidates;
       },
-      _getAnalytics: function(evt){
+      _getAnalytics: function (evt) {
         this.set('schedule', Interest.getAnalytics(evt.model.item, this.today()));
       },
       _makePayment: function (evt) {
-        this.navigate('/details/' + evt.model.item.$key+'/payment');
+        this.navigate('/details/' + evt.model.item.$key + '/payment');
       },
       newLoan: function () {
         this.navigate('/loan-form');
